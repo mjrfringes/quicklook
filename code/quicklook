@@ -279,7 +279,6 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     if method == 'optext':
         loc = primitives.PSFLets(load=True, infiledir=calibdir)
         lam_midpts = fits.open(calibdir + '/polychromekeyR%d.fits' % (R))[0].data
-        print(lam_midpts)
         datacube = primitives.optext_spectra(inImage, loc, lam_midpts, header=inImage.header, flat=lensletflat, maxcpus=maxcpus)
     else:
         print('Only optext is not supported for quicklook')
