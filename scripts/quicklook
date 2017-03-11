@@ -1,0 +1,491 @@
+#!/usr/bin/env python
+
+#########################################################################
+# A provisional routine for actually producing and returning data cubes.
+#########################################################################
+
+from __future__ import print_function
+import numpy as np
+import time
+import glob
+import re
+import os
+from astropy.io import fits
+try:
+    import primitives
+    import utr
+    from image import Image
+except:
+    import charis.primitives as primitives
+    import charis.utr as utr
+    from charis.image import Image
+import sys
+import ConfigParser
+import multiprocessing
+import copy
+import shutil
+import sys
+import pkg_resources
+
+
+
+def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
+                      order=3, lam1=1150, lam2=2400,
+                      header=None,ncpus=multiprocessing.cpu_count()):
+    """
+    Build the calibration files needed to extract data cubes from
+    sequences of CHARIS reads.
+
+    Inputs:
+    1. inImage:  Image class, should include count rate and ivar for 
+                 a narrow-band flatfield calibration image.
+    2. inLam:    wavelength in nm of inImage
+    3. mask:     bad pixel mask, =0 for bad pixels
+    4. indir:    directory where master calibration files live
+
+    Optional inputs:
+    1. outdir:   directory in which to place
+    1. order:    int, order of polynomial fit to position(lambda).
+                 Default 3 (strongly recommended).
+    2. lam1:     minimum wavelength (in nm) of the bandpass
+                 Default 1150
+    3. lam2:     maximum wavelength (in nm) of the bandpass
+                 Default 2400
+    5. trans:    ndarray, trans[:, 0] = wavelength in nm, trans[:, 1]
+                 is fractional transmission through the filter and 
+                 atmosphere.  Default None --> trans[:, 1] = 1
+    6. header:   FITS header, to which will be appended the shifts
+                 and rotation angle between the stored and the fitted
+                 wavelength solutions.  Default None.
+    7. ncpus:    number of threads for multithreading.  
+                 Default multiprocessing.cpu_count()
+
+    Returns None, writes calibration files to outdir.
+    
+    """
+
+    tstart = time.time()
+
+    #################################################################
+    # Fit the PSFlet positions on the input image, compute the shift
+    # in the mean position (coefficients 0 and 10) and in the linear
+    # component of the fit (coefficients 1, 4, 11, and 14).  The
+    # comparison point is the location solution for this wavelength in
+    # the existing calibration files.
+    #################################################################
+
+    log.info("Loading wavelength solution from " + indir + "/lamsol.dat")
+    lam = np.loadtxt(os.path.join(indir, "lamsol.dat"))[:, 0]
+    allcoef = np.loadtxt(os.path.join(indir, "lamsol.dat"))[:, 1:]
+    psftool = primitives.PSFLets()
+    oldcoef = psftool.monochrome_coef(inLam, lam, allcoef, order=order)
+
+    print('Generating new wavelength solution')
+    x, y, good, newcoef = primitives.locatePSFlets(inImage, polyorder=order, coef=oldcoef)
+            
+    psftool.geninterparray(lam, allcoef, order=order)
+    dcoef = newcoef - oldcoef
+
+    indx = np.asarray([0, 1, 4, 10, 11, 14])
+    psftool.interp_arr[0][indx] += dcoef[indx]
+    psftool.genpixsol(lam, allcoef, order=3, lam1=lam1/1.05, lam2=lam2*1.05)
+    psftool.savepixsol(outdir=outdir)
+
+    #################################################################
+    # Record the shift in the spot locations.
+    #################################################################    
+
+    phi1 = np.mean([np.arctan2(oldcoef[4], oldcoef[1]), 
+                    np.arctan2(-oldcoef[11], oldcoef[14])])
+    phi2 = np.mean([np.arctan2(newcoef[4], newcoef[1]),
+                    np.arctan2(-newcoef[11], newcoef[14])])
+    dx, dy, dphi = [dcoef[0], dcoef[10], phi2 - phi1]
+    if header is not None:
+        header['cal_dx'] = (dx, 'x-shift from archival spot positions (pixels)')
+        header['cal_dy'] = (dy, 'y-shift from archival spot positions (pixels)')
+        header['cal_dphi'] = (dphi, 'Rotation from archival spot positions (radians)')
+        header['ifs_rot'] = (180.*phi2/np.pi+90., 'Rotation of lenslet array (degrees)')
+
+
+    #################################################################
+    # Save the positions of the PSFlet centers to cut out the
+    # appropriate regions in the least-squares extraction
+    #################################################################
+
+    xpos = []
+    ypos = []
+    good = []
+    for i in range(Nspec - 1):
+        _x, _y = psftool.return_locations(lam_midpts[i], allcoef, xindx, yindx)
+        _good = (_x > 8)*(_x < 2040)*(_y > 8)*(_y < 2040)
+        xpos += [_x]
+        ypos += [_y]
+        good += [_good]
+
+    outkey = fits.HDUList(fits.PrimaryHDU(lam_midpts))
+    outkey.append(fits.PrimaryHDU(np.asarray(xpos)))
+    outkey.append(fits.PrimaryHDU(np.asarray(ypos)))
+    outkey.append(fits.PrimaryHDU(np.asarray(good).astype(np.uint8)))
+    outkey.writeto(outdir + 'polychromekeyR%d.fits' % (R), clobber=True)
+    
+    print("Total time elapsed: %.0f seconds" % (time.time() - tstart))
+    return None
+
+
+
+def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/', 
+            bgsub=True, mask=True, gain=2, noisefac=0, saveramp=False, 
+            R_lowres=30,R_hires=100,
+            method='optext', refine=False, suppressrn=False, fitshift=False, 
+            flatfield=True, smoothandmask=True, saveresid=False,
+            maxcpus=multiprocessing.cpu_count()):
+
+    """Provisional routine getcube.  Construct and return a data cube
+    from a set of reads.
+
+    Inputs:
+    1. filename: name of the file containing the up-the-ramp reads. 
+                 Should include the full path/to/file.
+    Optional inputs:
+    1. read_idx: list of two numbers, the first and last reads to use in
+                 the up-the-ramp combination.  Default [2, None], i.e., 
+                 discard the first read and use all of the rest.
+    2. calibdir: name of the directory containing the calibration files.  
+                 Default calibrations/20160408/
+    3. bgsub:    Subtract the file background.fits in calibdir?  Default
+                 True.
+    4. mask:     Apply the bad pixel mask mask.fits in the directory
+                 calibdir?  Strongly recommended.  Default True.
+    5. gain:     Detector gain, used to compute shot noise.  Default 2.
+    6. noisefac: Extra factor of noise to account for imperfect lenslet
+                 models: 
+                 variance = readnoise + shotnoise + noisefac*countrate
+                 Default zero, values of around 0.05 should give 
+                 reduced chi squared values of around 1 in the fit.
+    7. R:        integer, approximate resolution lam/delta(lam) of the
+                 extracted data cube.  Resolutions higher than ~25 or 30
+                 are comparable to or finer than the pixel sampling and 
+                 are not recommended--there is very strong covariance.
+                 Default 30.
+    8. method:   string, method used to extract data cube.  Should be 
+                 either 'lstsq' for a least-squares extraction or 
+                 'optext' for a quasi-optimal extraction.  Default
+                 'lstsq'
+    9. refine:   Fit the data cube twice to account for nearest neighbor
+                 crosstalk?  Approximately doubles runtime.  This option
+                 also enables read noise suppression (below).  Default 
+                 True
+    10. suppress_rn: Remove correlated read noise between channels using 
+                 the residuals of the 50% least illuminated pixels?  
+                 Default True.
+    11. fitshift: Fit a subpixel shift in the psflet locations across 
+                 the detector?  Recommended except for quicklook.  Cost 
+                 is modest compared to cube extraction
+
+    Returns:
+    1. datacube: an instance of the Image class containing the data cube.
+
+    Steps performed: 
+
+    1. Up-the-ramp combination.  As of yet no special read noise
+    suppression (just a channel-by-channel correction of the reference
+    voltages).  Do a full nonlinear fit for high count pixels, and 
+    remove an exponential decay of the reference voltage in the first
+    read.
+    2. Subtraction of thermal background from file in calibration 
+    directory.
+    3. Application of hot pixel mask (as zero inverse variances).
+    4. Load calibration files from calibration directory for the data
+    cube extraction, optionally fit for subpixel shifts across the 
+    detector.
+    5. Extract the data cube.
+
+    Notes for now: the quasi-optimal extraction isn't really an
+    optimal extraction.  Every lenslet's spectrum natively samples a
+    different set of wavelengths, so right now they are all simply
+    interpolated onto the same wavelength array.  This is certainly
+    not optimal, but I don't see any particularly good alternatives
+    (other than maybe convolving to a lower, but uniform, resolution).
+    The lstsq extraction can include all errors and covariances.
+    Errors are included (the diagonal of the covariance matrix), but
+    the full covariance matrix is currently discarded.
+
+    """
+    
+    ################################################################
+    # Initiate the header with critical data about the observation.
+    # Then add basic information about the calibration data used to
+    # extract a cube.
+    ################################################################
+    
+    header = utr.metadata(filename)
+
+    try:
+        calhead = fits.open(calibdir + '/cal_params.fits')[0].header
+        header.append(('comment', ''), end=True)
+        header.append(('comment', '*'*60), end=True)
+        header.append(('comment', '*'*21 + ' Calibration Data ' + '*'*21), end=True)
+        header.append(('comment', '*'*60), end=True)    
+        header.append(('comment', ''), end=True)
+        for key in calhead:
+            header.append((key, calhead[key], calhead.comments[key]), end=True)
+    except:
+        print('Unable to append calibration parameters to FITS header.')    
+
+    ################################################################
+    # Read in file and return an instance of the Image class with the
+    # up-the-ramp combination of reads.  Subtract the thermal
+    # background and apply a bad pixel mask.
+    ################################################################
+    
+    maskarr = None
+    if mask == True:
+        maskarr = fits.open(calibdir + '/mask.fits')[0].data  
+    
+    inImage = utr.calcramp(filename=filename, mask=maskarr,read_idx=read_idx, 
+                           header=header, gain=gain, noisefac=noisefac, 
+                           maxcpus=maxcpus)
+        
+    if saveramp:
+        inImage.write(re.sub('.*/', '', re.sub('.fits', '_ramp.fits', filename)))
+
+    ################################################################
+    # Read in necessary calibration files and extract the data cube.
+    # Optionally fit for a position-dependent offset 
+    ################################################################
+
+    header.append(('comment', ''), end=True)
+    header.append(('comment', '*'*60), end=True)
+    header.append(('comment', '*'*22 + ' Cube Extraction ' + '*'*21), end=True)
+    header.append(('comment', '*'*60), end=True)    
+    header.append(('comment', ''), end=True)
+
+    if flatfield:
+        lensletflat = fits.open(calibdir + '/lensletflat.fits')[0].data
+    else:
+        lensletflat = None
+    header['flatfld'] = (flatfield, 'Flatfield the detector and lenslet array?')
+
+    datacube = None
+
+
+    if method == 'optext':
+        loc = primitives.PSFLets(load=True, infiledir=calibdir)
+        lam_midpts = fits.open(calibdir + '/polychromekeyR%d.fits' % (R))[0].data
+        datacube = primitives.optext_spectra(inImage, loc, lam_midpts, header=inImage.header, flat=lensletflat, maxcpus=maxcpus)
+    else:
+        print('Only optext is not supported for quicklook')
+
+    if datacube is None:
+        raise ValueError("Datacube extraction method " + method + " not implemented.")
+
+    ################################################################
+    # Add the original header for reference as the last HDU
+    ################################################################
+
+    datacube.extrahead = fits.open(filename)[0].header
+
+    return datacube
+
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 3:
+        errstring = "This is a quicklook routine for CHARIS\n"
+        errstring += "Must call qiucklook with at least two arguments:\n"
+        errstring += "1: single string parsed by glob matching the to be turned into a data cube\n"
+        errstring += "2: a .ini configuration file processed by ConfigParser\n"
+        errstring += "If the file is a monochromatic flat, it means we want to a wavecal.\n"
+        errstring += "Otherwise, look up the closest existing wavelength calibration routine.\n"
+        print(errstring)
+        exit()
+
+    filename = glob.glob(sys.argv[1])
+    inifile = glob.glob(sys.argv[2])
+    
+    if filename is None:
+        raise ValueError("No matching CHARIS file found by extractcube.")
+    if inifile is None:
+        raise ValueError("No matching CHARIS .ini file found by extractcube.")
+
+
+    header = fits.open(filename[0])[0].header
+    # which band are we in?
+    band = header['Y_FLTNAM']
+    if band=='Broadband': band = 'lowres'
+
+    ################################################################
+    # Read the configuration file parameters
+    ################################################################
+
+    Config = ConfigParser.ConfigParser()
+    Config.read(inifile)
+
+    read_0 = Config.getint('Ramp', 'read_0')
+    try:
+        read_1 = Config.getint('Ramp', 'read_f')
+    except:
+        read_1 = None
+    read_idx = [read_0, read_1]
+    try:
+        gain = Config.getfloat('Ramp', 'gain')
+    except:
+        gain = 2
+        
+    saveramp = Config.getboolean('Ramp', 'saveramp')
+
+    calibdir = Config.get('Calib', 'calibdir')
+    outdir = Config.get('Calib', 'outdir')
+    mask = Config.getboolean('Calib', 'mask')
+    try:
+        flatfield = Config.getboolean('Calib', 'flatfield')
+    except:
+        flatfield = True
+
+    R_lowres = Config.getint('Extract', 'R_lowres')
+    R_hires = Config.getint('Extract', 'R_hires')
+    method = Config.get('Extract', 'method')
+    try:
+        saveivar = Config.getboolean('Extract', 'saveivar')
+    except:
+        saveivar = False
+
+    ################################################################
+    # Maximum threads must be between 1 and cpu_count, inclusive
+    ################################################################
+
+    try:
+        maxcpus = Config.getint('Extract', 'maxcpus')
+        if maxcpus <= 0:
+            maxcpus = multiprocessing.cpu_count() + maxcpus
+        maxcpus = min(maxcpus, multiprocessing.cpu_count())
+        maxcpus = max(maxcpus, 1)
+    except:
+        maxcpus = multiprocessing.cpu_count()
+
+    try:
+        smoothandmask = Config.getboolean('Extract', 'smoothandmask')
+    except:
+        smoothandmask = True
+
+    ################################################################
+    # Need to determine whether this is a calibration or not
+    # If it is a calibration, need to run the calibration function
+    # if not, just do the reduction.
+    ################################################################
+
+#     if header['PIAA1'] != 'Open':
+    if False:
+        
+        ###############################################################
+        # When doing a wavelength calibration, the object name is the
+        # wavelength in microns
+        ###############################################################
+        lam = int(header['OBJECT'])
+        
+        prefix = pkg_resources.resource_filename('charis', 'calibrations')
+
+        ###############################################################
+        # Spectral resolutions for the final calibration files
+        ###############################################################
+
+        if band in ['J', 'H', 'K']:
+            indir = os.path.join(prefix, "highres_" + band)
+        else:
+            indir = os.path.join(prefix, "lowres")
+
+        mask = fits.open(os.path.join(prefix, 'mask.fits'))[0].data
+
+        ###############################################################
+        # Build a header object with calibration info
+        ###############################################################
+        hdr = fits.PrimaryHDU().header
+        hdr.clear()
+        hdr['calfname'] = (re.sub('.*/', '', filename[0]),'Monochromatic image used for calibration')
+        try:
+            hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
+        except:
+            hdr['cal_date'] = ('unavailable', 'MJD date of calibration image')
+        hdr['cal_lam'] = (lam, 'Wavelength of calibration image (nm)')
+        hdr['cal_band'] = (band, 'Band/mode of calibration image (J/H/K/lowres)')
+        
+        
+        ###############################################################
+        # Construct the wavelength calibration folder
+        ###############################################################
+        outdir = outdir+band+'_%.2s' % (header['mjd'])
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        
+        ###############################################################
+        # Monochromatic flatfield image
+        ###############################################################
+
+        num = 0
+        denom = 1e-100
+        for filename in infilelist:
+            im = utr.calcramp(filename=filename, mask=mask, maxcpus=nthreads)
+            num = num + im.data*im.ivar
+            denom = denom + im.ivar
+        inImage = Image(data=num/denom, ivar=mask*1./denom)
+
+        
+        ###############################################################
+        # Wavelength limits in nm
+        ###############################################################
+
+        if band == 'J':   
+            lam1, lam2 = [1155, 1340]
+        elif band == 'H':
+            lam1, lam2 = [1470, 1800]
+        elif band == 'K':
+            lam1, lam2 = [2005, 2380]
+        elif band == 'lowres':
+            lam1, lam2 = [1140, 2410]
+        else:
+            raise ValueError('Band must be one of: J, H, K, lowres')
+
+        if lam < lam1 or lam > lam2:
+            raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
+
+        ###############################################################
+        # Launch main routine
+        ###############################################################
+        buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2,
+                            order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
+
+        out = fits.HDUList(fits.PrimaryHDU(None, hdr))
+        out.writeto(outdir+'cal_params.fits', clobber=True)
+
+        shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
+
+        for filename in ['mask.fits', 'pixelflat.fits']:
+            shutil.copy(os.path.join(prefix, filename), outdir+ filename)
+
+    else:
+        
+        ###############################################################
+        # Finding the wavecal folder with the closest mjd
+        ###############################################################
+        current_mjd = header['mjd']
+#         calib_folder_list = next(os.walk(calibdir))[1]
+        calib_folder_list = [d for d in os.listdir(calibdir) 
+                            if os.path.isdir(os.path.join(calibdir, d)) if band in d]
+        mjd_list = []
+        for calib_folder in calib_folder_list:
+            mjd_list.append(int(calib_folder.split('_')[-1]))
+        closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
+        bestcalibdir = calibdir+band+'_'+str(closest)
+        
+        ###############################################################
+        # Reduce the cube
+        ###############################################################        
+        cube = getcube(filename=filename, read_idx=read_idx,
+                       mask=mask, gain=gain, 
+                       saveramp=saveramp, maxcpus=maxcpus, 
+                       calibdir=bestcalibdir, R_lowres=R_lowres,R_hires=R_hires, 
+                       smoothandmask=smoothandmask, flatfield=flatfield)
+                        
+        if not saveivar:
+            cube.ivar=None
+        cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename)))
