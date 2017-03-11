@@ -143,8 +143,7 @@ def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
 
 def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/', 
             bgsub=True, mask=True, gain=2, noisefac=0, saveramp=False, 
-            R_lowres=30,R_hires=100,
-            method='optext', refine=False, suppressrn=False, fitshift=False, 
+            R=30,method='optext', refine=False, suppressrn=False, fitshift=False, 
             flatfield=True, smoothandmask=True, saveresid=False,
             maxcpus=multiprocessing.cpu_count()):
 
@@ -482,13 +481,11 @@ if __name__ == "__main__":
         calib_folder_list = [d for d in os.listdir(outdir) 
                             if os.path.isdir(os.path.join(outdir, d)) if band in d]
         mjd_list = []
-        print(calib_folder_list)
         for calib_folder in calib_folder_list:
-            print(calib_folder)
-            print(calib_folder.split('_')[-1])
             mjd_list.append(float(calib_folder.split('_')[-1]))
         closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
         bestcalibdir = outdir+band+'_'+str(closest)
+        print('Selected best wavecal %s' % (band+'_'+str(closest)))
         
         ###############################################################
         # Reduce the cube
@@ -496,7 +493,7 @@ if __name__ == "__main__":
         cube = getcube(filename=filename[0], read_idx=read_idx,
                        mask=mask, gain=gain, 
                        saveramp=saveramp, maxcpus=maxcpus, 
-                       calibdir=bestcalibdir, R_lowres=R_lowres,R_hires=R_hires, 
+                       calibdir=bestcalibdir, R=R, 
                        smoothandmask=smoothandmask, flatfield=flatfield)
                         
         if not saveivar:
