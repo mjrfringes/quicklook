@@ -297,7 +297,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         errstring = "This is a quicklook routine for CHARIS\n"
         errstring += "Must call qiucklook with at least two arguments:\n"
         errstring += "1: single string parsed by glob matching the to be turned into a data cube\n"
@@ -308,7 +308,10 @@ if __name__ == "__main__":
         exit()
 
     filename = glob.glob(sys.argv[1])
-    inifile = glob.glob(sys.argv[2])
+    if len(sys.argv)==3:
+        inifile = glob.glob(sys.argv[2])
+    else:
+        inifile = '/home/mrclean/quicklook/code/quicklook.ini'
     
     if filename is None:
         raise ValueError("No matching CHARIS file found by extractcube.")
