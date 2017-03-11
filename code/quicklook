@@ -479,8 +479,8 @@ if __name__ == "__main__":
         ###############################################################
         current_mjd = header['mjd']
 #         calib_folder_list = next(os.walk(calibdir))[1]
-        calib_folder_list = [d for d in os.listdir(calibdir) 
-                            if os.path.isdir(os.path.join(calibdir, d)) if band in d]
+        calib_folder_list = [d for d in os.listdir(outdir) 
+                            if os.path.isdir(os.path.join(outdir, d)) if band in d]
         mjd_list = []
         print(calib_folder_list)
         for calib_folder in calib_folder_list:
