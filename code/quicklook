@@ -74,7 +74,7 @@ def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
     # the existing calibration files.
     #################################################################
 
-    log.info("Loading wavelength solution from " + indir + "/lamsol.dat")
+    print("Loading wavelength solution from " + indir + "/lamsol.dat")
     lam = np.loadtxt(os.path.join(indir, "lamsol.dat"))[:, 0]
     allcoef = np.loadtxt(os.path.join(indir, "lamsol.dat"))[:, 1:]
     psftool = primitives.PSFLets()
