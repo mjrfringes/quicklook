@@ -30,7 +30,7 @@ import pkg_resources
 
 
 def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
-                      order=3, lam1=1150, lam2=2400,
+                      order=3, lam1=1150, lam2=2400,R=30,
                       header=None,ncpus=multiprocessing.cpu_count()):
     """
     Build the calibration files needed to extract data cubes from
@@ -115,6 +115,7 @@ def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
     xpos = []
     ypos = []
     good = []
+    Nspec = int(np.log(lam2*1./lam1)*R + 1.5)
     for i in range(Nspec - 1):
         _x, _y = psftool.return_locations(lam_midpts[i], allcoef, xindx, yindx)
         _good = (_x > 8)*(_x < 2040)*(_y > 8)*(_y < 2040)
@@ -348,6 +349,11 @@ if __name__ == "__main__":
         saveivar = Config.getboolean('Extract', 'saveivar')
     except:
         saveivar = False
+        
+    if band=='lowres':
+        R = R_lowres
+    else:
+        R = R_hires
 
     ################################################################
     # Maximum threads must be between 1 and cpu_count, inclusive
@@ -448,7 +454,7 @@ if __name__ == "__main__":
         ###############################################################
         # Launch main routine
         ###############################################################
-        buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2,
+        buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
                             order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
 
         out = fits.HDUList(fits.PrimaryHDU(None, hdr))
