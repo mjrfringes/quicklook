@@ -291,6 +291,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     ################################################################
 
     datacube.extrahead = fits.open(filename)[0].header
+    print("Total time elapsed: %.0f seconds" % (time.time() - tstart))
 
     return datacube
 
