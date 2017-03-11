@@ -1493,7 +1493,7 @@ static const char __pyx_k_Invalid_shape_in_axis_d_d[] = "Invalid shape in axis %
 static const char __pyx_k_itemsize_0_for_cython_array[] = "itemsize <= 0 for cython.array";
 static const char __pyx_k_unable_to_allocate_array_data[] = "unable to allocate array data.";
 static const char __pyx_k_strided_and_direct_or_indirect[] = "<strided and direct or indirect>";
-static const char __pyx_k_home_tbrandt_Dropbox_charis_dep[] = "/home/tbrandt/Dropbox/charis-dep/charis-dep/code/primitives/matutils.pyx";
+static const char __pyx_k_home_mrclean_quicklook_code_pri[] = "/home/mrclean/quicklook/code/primitives/matutils.pyx";
 static const char __pyx_k_Buffer_view_does_not_expose_stri[] = "Buffer view does not expose strides";
 static const char __pyx_k_Can_only_create_a_buffer_that_is[] = "Can only create a buffer that is contiguous in memory.";
 static const char __pyx_k_Empty_shape_tuple_for_cython_arr[] = "Empty shape tuple for cython.array";
@@ -1579,7 +1579,7 @@ static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_g;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
 static PyObject *__pyx_n_s_h;
-static PyObject *__pyx_kp_s_home_tbrandt_Dropbox_charis_dep;
+static PyObject *__pyx_kp_s_home_mrclean_quicklook_code_pri;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_i1;
 static PyObject *__pyx_n_s_i2;
@@ -11775,7 +11775,7 @@ static PyObject *__pyx_pf_8matutils_8optext(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  *                     num = coefs_num[i, j, i1]*w1 + coefs_num[i, j, i2]*w2             # <<<<<<<<<<<<<<
  *                     denom = coefs_denom[i, j, i1]*w1 + coefs_denom[i, j, i2]*w2
- *                     coefs[k, i, j] = num/denom
+ *                     coefs[k, i, j] = num/(denom + 1e-10)
  */
                                     __pyx_t_80 = __pyx_v_i;
                                     __pyx_t_81 = __pyx_v_j;
@@ -11789,7 +11789,7 @@ static PyObject *__pyx_pf_8matutils_8optext(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  *                     num = coefs_num[i, j, i1]*w1 + coefs_num[i, j, i2]*w2
  *                     denom = coefs_denom[i, j, i1]*w1 + coefs_denom[i, j, i2]*w2             # <<<<<<<<<<<<<<
- *                     coefs[k, i, j] = num/denom
+ *                     coefs[k, i, j] = num/(denom + 1e-10)
  *                     ivar_tot[k, i, j] = denom
  */
                                     __pyx_t_86 = __pyx_v_i;
@@ -11803,11 +11803,12 @@ static PyObject *__pyx_pf_8matutils_8optext(CYTHON_UNUSED PyObject *__pyx_self, 
                                     /* "matutils.pyx":708
  *                     num = coefs_num[i, j, i1]*w1 + coefs_num[i, j, i2]*w2
  *                     denom = coefs_denom[i, j, i1]*w1 + coefs_denom[i, j, i2]*w2
- *                     coefs[k, i, j] = num/denom             # <<<<<<<<<<<<<<
+ *                     coefs[k, i, j] = num/(denom + 1e-10)             # <<<<<<<<<<<<<<
  *                     ivar_tot[k, i, j] = denom
  * 
  */
-                                    if (unlikely(__pyx_v_denom == 0)) {
+                                    __pyx_t_50 = (__pyx_v_denom + 1e-10);
+                                    if (unlikely(__pyx_t_50 == 0)) {
                                       #ifdef WITH_THREAD
                                       PyGILState_STATE __pyx_gilstate_save = PyGILState_Ensure();
                                       #endif
@@ -11820,11 +11821,11 @@ static PyObject *__pyx_pf_8matutils_8optext(CYTHON_UNUSED PyObject *__pyx_self, 
                                     __pyx_t_92 = __pyx_v_k;
                                     __pyx_t_93 = __pyx_v_i;
                                     __pyx_t_94 = __pyx_v_j;
-                                    *((double *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_coefs.data + __pyx_t_92 * __pyx_v_coefs.strides[0]) ) + __pyx_t_93 * __pyx_v_coefs.strides[1]) ) + __pyx_t_94 * __pyx_v_coefs.strides[2]) )) = (__pyx_v_num / __pyx_v_denom);
+                                    *((double *) ( /* dim=2 */ (( /* dim=1 */ (( /* dim=0 */ (__pyx_v_coefs.data + __pyx_t_92 * __pyx_v_coefs.strides[0]) ) + __pyx_t_93 * __pyx_v_coefs.strides[1]) ) + __pyx_t_94 * __pyx_v_coefs.strides[2]) )) = (__pyx_v_num / __pyx_t_50);
 
                                     /* "matutils.pyx":709
  *                     denom = coefs_denom[i, j, i1]*w1 + coefs_denom[i, j, i2]*w2
- *                     coefs[k, i, j] = num/denom
+ *                     coefs[k, i, j] = num/(denom + 1e-10)
  *                     ivar_tot[k, i, j] = denom             # <<<<<<<<<<<<<<
  * 
  *     return coefs_np, ivar_tot_np
@@ -24409,7 +24410,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_g, __pyx_k_g, sizeof(__pyx_k_g), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
   {&__pyx_n_s_h, __pyx_k_h, sizeof(__pyx_k_h), 0, 0, 1, 1},
-  {&__pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_k_home_tbrandt_Dropbox_charis_dep, sizeof(__pyx_k_home_tbrandt_Dropbox_charis_dep), 0, 0, 1, 0},
+  {&__pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_k_home_mrclean_quicklook_code_pri, sizeof(__pyx_k_home_mrclean_quicklook_code_pri), 0, 0, 1, 0},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_i1, __pyx_k_i1, sizeof(__pyx_k_i1), 0, 0, 1, 1},
   {&__pyx_n_s_i2, __pyx_k_i2, sizeof(__pyx_k_i2), 0, 0, 1, 1},
@@ -24779,7 +24780,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__22 = PyTuple_Pack(26, __pyx_n_s_calimage, __pyx_n_s_image, __pyx_n_s_ivar, __pyx_n_s_offsets, __pyx_n_s_n1, __pyx_n_s_n2, __pyx_n_s_m1, __pyx_n_s_m2, __pyx_n_s_maxproc, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_ii, __pyx_n_s_k1, __pyx_n_s_k2, __pyx_n_s_n, __pyx_n_s_dj, __pyx_n_s_nlam, __pyx_n_s_upsamp, __pyx_n_s_mmin, __pyx_n_s_mmax, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_maskedim_np, __pyx_n_s_maskedim, __pyx_n_s_corrvals_np, __pyx_n_s_corrvals); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 9, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
-  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(9, 0, 26, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_n_s_crosscorr, 9, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 9, __pyx_L1_error)
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(9, 0, 26, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_n_s_crosscorr, 9, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 9, __pyx_L1_error)
 
   /* "matutils.pyx":98
  * @cython.boundscheck(False)
@@ -24791,7 +24792,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__24 = PyTuple_Pack(29, __pyx_n_s_calimage, __pyx_n_s_image, __pyx_n_s_mask, __pyx_n_s_offsets, __pyx_n_s_maxproc, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_k1, __pyx_n_s_k2, __pyx_n_s_dj, __pyx_n_s_nlam, __pyx_n_s_noffset, __pyx_n_s_upsamp, __pyx_n_s_n1, __pyx_n_s_n2, __pyx_n_s_m1, __pyx_n_s_m2, __pyx_n_s_nn1, __pyx_n_s_nn2, __pyx_n_s_mm1, __pyx_n_s_mm2, __pyx_n_s_x, __pyx_n_s_calinterp_np, __pyx_n_s_calinterp, __pyx_n_s_xarr_np, __pyx_n_s_xarr, __pyx_n_s_fac_np, __pyx_n_s_fac); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__24);
   __Pyx_GIVEREF(__pyx_tuple__24);
-  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(5, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_n_s_interpcal, 98, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 98, __pyx_L1_error)
+  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(5, 0, 29, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_n_s_interpcal, 98, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 98, __pyx_L1_error)
 
   /* "matutils.pyx":147
  * @cython.boundscheck(False)
@@ -24803,7 +24804,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__26 = PyTuple_Pack(36, __pyx_n_s_im, __pyx_n_s_isig, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_indx, __pyx_n_s_psflets, __pyx_n_s_dx, __pyx_n_s_maxproc, __pyx_n_s_maxsize, __pyx_n_s_nlam, __pyx_n_s_ix, __pyx_n_s_iy, __pyx_n_s_x0, __pyx_n_s_x1, __pyx_n_s_y0, __pyx_n_s_y1, __pyx_n_s_dx0, __pyx_n_s_dy0, __pyx_n_s_xdim, __pyx_n_s_ydim, __pyx_n_s_ii, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_nlens, __pyx_n_s_n, __pyx_n_s_jj, __pyx_n_s_size_np, __pyx_n_s_size, __pyx_n_s_ylim_np, __pyx_n_s_ylim, __pyx_n_s_xlim_np, __pyx_n_s_xlim, __pyx_n_s_A_np, __pyx_n_s_b_np, __pyx_n_s_A, __pyx_n_s_b); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 147, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
-  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(8, 0, 36, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_n_s_allcutouts, 147, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 147, __pyx_L1_error)
+  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(8, 0, 36, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_n_s_allcutouts, 147, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 147, __pyx_L1_error)
 
   /* "matutils.pyx":275
  * @cython.boundscheck(False)
@@ -24815,7 +24816,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__28 = PyTuple_Pack(53, __pyx_n_s_A, __pyx_n_s_b, __pyx_n_s_indx, __pyx_n_s_size, __pyx_n_s_ncoef, __pyx_n_s_returncov, __pyx_n_s_maxproc, __pyx_n_s_flag, __pyx_n_s_its, __pyx_n_s_jj, __pyx_n_s_j, __pyx_n_s_ii, __pyx_n_s_i, __pyx_n_s_l, __pyx_n_s_k, __pyx_n_s_nm, __pyx_n_s_n, __pyx_n_s_mm, __pyx_n_s_m, __pyx_n_s_inc, __pyx_n_s_di, __pyx_n_s_c, __pyx_n_s_f, __pyx_n_s_h, __pyx_n_s_s, __pyx_n_s_x, __pyx_n_s_y, __pyx_n_s_z, __pyx_n_s_tmp, __pyx_n_s_tmp1, __pyx_n_s_tmp2, __pyx_n_s_sw, __pyx_n_s_eps, __pyx_n_s_tsh, __pyx_n_s_anorm, __pyx_n_s_g, __pyx_n_s_scale, __pyx_n_s_tmparr_np, __pyx_n_s_tmparr, __pyx_n_s_su_np, __pyx_n_s_su, __pyx_n_s_sv_np, __pyx_n_s_sv, __pyx_n_s_w_np, __pyx_n_s_w, __pyx_n_s_rv1_np, __pyx_n_s_rv1, __pyx_n_s_v_np, __pyx_n_s_v, __pyx_n_s_coef_np, __pyx_n_s_coef, __pyx_n_s_cov_np, __pyx_n_s_cov); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 275, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(7, 0, 53, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_n_s_lstsq, 275, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 275, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(7, 0, 53, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_n_s_lstsq, 275, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 275, __pyx_L1_error)
 
   /* "matutils.pyx":620
  * @cython.boundscheck(False)
@@ -24827,7 +24828,7 @@ static int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__30 = PyTuple_Pack(41, __pyx_n_s_im, __pyx_n_s_ivar, __pyx_n_s_xindx, __pyx_n_s_yindx, __pyx_n_s_loglamindx, __pyx_n_s_nlam, __pyx_n_s_refloglam, __pyx_n_s_nmax, __pyx_n_s_delt_x, __pyx_n_s_sig, __pyx_n_s_maxproc, __pyx_n_s_i, __pyx_n_s_j, __pyx_n_s_k, __pyx_n_s_n, __pyx_n_s_nx, __pyx_n_s_ny, __pyx_n_s_ix, __pyx_n_s_iy, __pyx_n_s_xdim, __pyx_n_s_ydim, __pyx_n_s_nref, __pyx_n_s_i1, __pyx_n_s_i2, __pyx_n_s_x, __pyx_n_s_dx, __pyx_n_s_num, __pyx_n_s_denom, __pyx_n_s_w1, __pyx_n_s_w2, __pyx_n_s_wtot, __pyx_n_s_coefs_num_np, __pyx_n_s_coefs_num, __pyx_n_s_coefs_denom_np, __pyx_n_s_coefs_denom, __pyx_n_s_coefs_np, __pyx_n_s_coefs, __pyx_n_s_ivar_tot_np, __pyx_n_s_ivar_tot, __pyx_n_s_lamref_np, __pyx_n_s_lamref); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 620, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__30);
   __Pyx_GIVEREF(__pyx_tuple__30);
-  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(11, 0, 41, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_tbrandt_Dropbox_charis_dep, __pyx_n_s_optext, 620, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 620, __pyx_L1_error)
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(11, 0, 41, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_mrclean_quicklook_code_pri, __pyx_n_s_optext, 620, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 620, __pyx_L1_error)
 
   /* "View.MemoryView":282
  *         return self.name
