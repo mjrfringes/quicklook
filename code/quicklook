@@ -116,6 +116,10 @@ def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
     ypos = []
     good = []
     Nspec = int(np.log(lam2*1./lam1)*R + 1.5)
+    loglam_endpts = np.linspace(np.log(lam1), np.log(lam2), Nspec)
+    loglam_midpts = (loglam_endpts[1:] + loglam_endpts[:-1])/2
+    lam_endpts = np.exp(loglam_endpts)
+    lam_midpts = np.exp(loglam_midpts)
     for i in range(Nspec - 1):
         _x, _y = psftool.return_locations(lam_midpts[i], allcoef, xindx, yindx)
         _good = (_x > 8)*(_x < 2040)*(_y > 8)*(_y < 2040)
