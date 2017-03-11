@@ -387,7 +387,7 @@ if __name__ == "__main__":
     ################################################################
 
 #     if header['PIAA1'] != 'Open':
-    if True:
+    if False:
         
         ###############################################################
         # When doing a wavelength calibration, the object name is the
