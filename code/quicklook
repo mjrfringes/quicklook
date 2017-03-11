@@ -421,7 +421,7 @@ if __name__ == "__main__":
         ###############################################################
 
         denom = 1e-100
-        im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
+        im = utr.calcramp(filename=filename[0], mask=mask, maxcpus=maxcpus)
         num = im.data*im.ivar
         denom = denom + im.ivar
         inImage = Image(data=num/denom, ivar=mask*1./denom)
@@ -456,8 +456,8 @@ if __name__ == "__main__":
 
         shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
 
-        for filename in ['mask.fits', 'pixelflat.fits']:
-            shutil.copy(os.path.join(prefix, filename), outdir+ filename)
+        for fname in ['mask.fits', 'pixelflat.fits']:
+            shutil.copy(os.path.join(prefix, fname), outdir+ fname)
 
     else:
         
@@ -477,7 +477,7 @@ if __name__ == "__main__":
         ###############################################################
         # Reduce the cube
         ###############################################################        
-        cube = getcube(filename=filename, read_idx=read_idx,
+        cube = getcube(filename=filename[0], read_idx=read_idx,
                        mask=mask, gain=gain, 
                        saveramp=saveramp, maxcpus=maxcpus, 
                        calibdir=bestcalibdir, R_lowres=R_lowres,R_hires=R_hires, 
@@ -485,4 +485,4 @@ if __name__ == "__main__":
                         
         if not saveivar:
             cube.ivar=None
-        cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename)))
+        cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0])))
