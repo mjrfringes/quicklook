@@ -344,7 +344,6 @@ if __name__ == "__main__":
 
     R_lowres = Config.getint('Extract', 'R_lowres')
     R_hires = Config.getint('Extract', 'R_hires')
-    method = Config.get('Extract', 'method')
     try:
         saveivar = Config.getboolean('Extract', 'saveivar')
     except:
