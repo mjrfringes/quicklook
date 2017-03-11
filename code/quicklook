@@ -488,7 +488,7 @@ if __name__ == "__main__":
             print(calib_folder.split('_')[-1])
             mjd_list.append(float(calib_folder.split('_')[-1]))
         closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
-        bestcalibdir = calibdir+band+'_'+str(closest)
+        bestcalibdir = outdir+band+'_'+str(closest)
         
         ###############################################################
         # Reduce the cube
