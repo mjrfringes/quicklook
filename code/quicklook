@@ -425,7 +425,7 @@ if __name__ == "__main__":
         ###############################################################
         # Construct the wavelength calibration folder
         ###############################################################
-        outdir = outdir+band+'_%.2s' % (header['mjd'])
+        outdir = outdir+band+'_%.2f' % (header['mjd'])
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
