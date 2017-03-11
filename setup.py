@@ -27,21 +27,21 @@ setup(
     package_dir = {'quicklook': 'code', 'quicklook.primitives':'code/primitives',
                    'quicklook.image':'code/image', 'quicklook.utr':'code/utr',
                    'quicklook.parallel':'code/parallel'},
-    data_files = [('quicklook/calibrations') + ['code/calibrations/lowres/mask.fits',
+    data_files = [('quicklook/calibrations', ['code/calibrations/lowres/mask.fits',
                                            'code/calibrations/lowres/pixelflat.fits']),
-                  ('quicklook/calibrations/lowres') + 
+                  ('quicklook/calibrations/lowres' + 
                                                   ['code/calibrations/lowres/lensletflat.fits',
                                                   'code/calibrations/lowres/lowres_tottrans.dat',
                                                   'code/calibrations/lowres/lamsol.dat']),
-                  ('quicklook/calibrations/highres_J') + 
+                  ('quicklook/calibrations/highres_J' + 
                                                   ['code/calibrations/highres_J/lensletflat.fits',
                                                   'code/calibrations/highres_J/J_tottrans.dat',
                                                   'code/calibrations/highres_J/lamsol.dat']),
-                  ('quicklook/calibrations/highres_H') + 
+                  ('quicklook/calibrations/highres_H' + 
                                                   ['code/calibrations/highres_H/lensletflat.fits',
                                                   'code/calibrations/highres_H/H_tottrans.dat',
                                                   'code/calibrations/highres_H/lamsol.dat']),
-                  ('quicklook/calibrations/highres_K') + 
+                  ('quicklook/calibrations/highres_K' + 
                                                   ['code/calibrations/highres_K/lensletflat.fits',
                                                   'code/calibrations/highres_K/K_tottrans.dat',
                                                   'code/calibrations/highres_K/lamsol.dat'])],
