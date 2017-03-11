@@ -16,9 +16,9 @@ try:
     import utr
     from image import Image
 except:
-    import charis.primitives as primitives
-    import charis.utr as utr
-    from charis.image import Image
+    import quicklook.primitives as primitives
+    import quicklook.utr as utr
+    from quicklook.image import Image
 import sys
 import ConfigParser
 import multiprocessing
@@ -383,7 +383,7 @@ if __name__ == "__main__":
         ###############################################################
         lam = int(header['OBJECT'])
         
-        prefix = pkg_resources.resource_filename('charis', 'calibrations')
+        prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
 
         ###############################################################
         # Spectral resolutions for the final calibration files

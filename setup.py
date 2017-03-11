@@ -7,13 +7,13 @@ import glob
 
 
 ext_modules = [ ]
-ext_modules += [Extension("charis.primitives.matutils", 
+ext_modules += [Extension("quicklook.primitives.matutils", 
                          ['code/primitives/matutils.pyx'],
                          extra_compile_args=['-fopenmp'],
                          extra_link_args=['-fopenmp'],
                       )]
 
-ext_modules += [Extension("charis.utr.fitramp", 
+ext_modules += [Extension("quicklook.utr.fitramp", 
                           ['code/utr/fitramp.pyx'],
                           extra_compile_args=['-fopenmp'],
                           extra_link_args=['-fopenmp'],
@@ -21,27 +21,27 @@ ext_modules += [Extension("charis.utr.fitramp",
 
 
 setup(    
-    name='charis', 
-    packages = {'charis', 'charis.primitives', 'charis.utr', 'charis.image',
-                'charis.parallel'},
-    package_dir = {'charis': 'code', 'charis.primitives':'code/primitives',
-                   'charis.image':'code/image', 'charis.utr':'code/utr',
-                   'charis.parallel':'code/parallel'},
-    data_files = [('charis/calibrations', ['code/calibrations/lowres/mask.fits',
+    name='quicklook', 
+    packages = {'quicklook', 'quicklook.primitives', 'quicklook.utr', 'quicklook.image',
+                'quicklook.parallel'},
+    package_dir = {'quicklook': 'code', 'quicklook.primitives':'code/primitives',
+                   'quicklook.image':'code/image', 'quicklook.utr':'code/utr',
+                   'quicklook.parallel':'code/parallel'},
+    data_files = [('quicklook/calibrations', ['code/calibrations/lowres/mask.fits',
                                            'code/calibrations/lowres/pixelflat.fits']),
-                  ('charis/calibrations/lowres', glob.glob('code/calibrations/lowres/hires_psflets*') + 
+                  ('quicklook/calibrations/lowres', glob.glob('code/calibrations/lowres/hires_psflets*') + 
                                                   ['code/calibrations/lowres/lensletflat.fits',
                                                   'code/calibrations/lowres/lowres_tottrans.dat',
                                                   'code/calibrations/lowres/lamsol.dat']),
-                  ('charis/calibrations/highres_J', glob.glob('code/calibrations/highres_J/hires_psflets*') + 
+                  ('quicklook/calibrations/highres_J', glob.glob('code/calibrations/highres_J/hires_psflets*') + 
                                                   ['code/calibrations/highres_J/lensletflat.fits',
                                                   'code/calibrations/highres_J/J_tottrans.dat',
                                                   'code/calibrations/highres_J/lamsol.dat']),
-                  ('charis/calibrations/highres_H', glob.glob('code/calibrations/highres_H/hires_psflets*') + 
+                  ('quicklook/calibrations/highres_H', glob.glob('code/calibrations/highres_H/hires_psflets*') + 
                                                   ['code/calibrations/highres_H/lensletflat.fits',
                                                   'code/calibrations/highres_H/H_tottrans.dat',
                                                   'code/calibrations/highres_H/lamsol.dat']),
-                  ('charis/calibrations/highres_K', glob.glob('code/calibrations/highres_K/hires_psflets*') + 
+                  ('quicklook/calibrations/highres_K', ) + 
                                                   ['code/calibrations/highres_K/lensletflat.fits',
                                                   'code/calibrations/highres_K/K_tottrans.dat',
                                                   'code/calibrations/highres_K/lamsol.dat'])],
