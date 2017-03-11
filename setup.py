@@ -27,7 +27,7 @@ setup(
     package_dir = {'quicklook': 'code', 'quicklook.primitives':'code/primitives',
                    'quicklook.image':'code/image', 'quicklook.utr':'code/utr',
                    'quicklook.parallel':'code/parallel'},
-    data_files = [('quicklook/calibrations', ['code/calibrations/lowres/mask.fits',
+    data_files = [('quicklook/calibrations') + ['code/calibrations/lowres/mask.fits',
                                            'code/calibrations/lowres/pixelflat.fits']),
                   ('quicklook/calibrations/lowres') + 
                                                   ['code/calibrations/lowres/lensletflat.fits',
