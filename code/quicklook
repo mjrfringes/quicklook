@@ -421,7 +421,7 @@ if __name__ == "__main__":
         ###############################################################
 
         denom = 1e-100
-        im = utr.calcramp(filename=filename, mask=mask, maxcpus=nthreads)
+        im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
         num = im.data*im.ivar
         denom = denom + im.ivar
         inImage = Image(data=num/denom, ivar=mask*1./denom)
