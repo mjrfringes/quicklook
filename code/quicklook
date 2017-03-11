@@ -483,7 +483,9 @@ if __name__ == "__main__":
                             if os.path.isdir(os.path.join(calibdir, d)) if band in d]
         mjd_list = []
         for calib_folder in calib_folder_list:
-            mjd_list.append(int(calib_folder.split('_')[-1]))
+            print(calib_folder)
+            print(calib_folder.split('_')[-1])
+            mjd_list.append(float(calib_folder.split('_')[-1]))
         closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
         bestcalibdir = calibdir+band+'_'+str(closest)
         
