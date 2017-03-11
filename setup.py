@@ -29,19 +29,19 @@ setup(
                    'quicklook.parallel':'code/parallel'},
     data_files = [('quicklook/calibrations', ['code/calibrations/lowres/mask.fits',
                                            'code/calibrations/lowres/pixelflat.fits']),
-                  ('quicklook/calibrations/lowres', glob.glob('code/calibrations/lowres/hires_psflets*') + 
+                  ('quicklook/calibrations/lowres') + 
                                                   ['code/calibrations/lowres/lensletflat.fits',
                                                   'code/calibrations/lowres/lowres_tottrans.dat',
                                                   'code/calibrations/lowres/lamsol.dat']),
-                  ('quicklook/calibrations/highres_J', glob.glob('code/calibrations/highres_J/hires_psflets*') + 
+                  ('quicklook/calibrations/highres_J') + 
                                                   ['code/calibrations/highres_J/lensletflat.fits',
                                                   'code/calibrations/highres_J/J_tottrans.dat',
                                                   'code/calibrations/highres_J/lamsol.dat']),
-                  ('quicklook/calibrations/highres_H', glob.glob('code/calibrations/highres_H/hires_psflets*') + 
+                  ('quicklook/calibrations/highres_H') + 
                                                   ['code/calibrations/highres_H/lensletflat.fits',
                                                   'code/calibrations/highres_H/H_tottrans.dat',
                                                   'code/calibrations/highres_H/lamsol.dat']),
-                  ('quicklook/calibrations/highres_K', ) + 
+                  ('quicklook/calibrations/highres_K') + 
                                                   ['code/calibrations/highres_K/lensletflat.fits',
                                                   'code/calibrations/highres_K/K_tottrans.dat',
                                                   'code/calibrations/highres_K/lamsol.dat'])],
