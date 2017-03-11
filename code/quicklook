@@ -482,6 +482,7 @@ if __name__ == "__main__":
         calib_folder_list = [d for d in os.listdir(calibdir) 
                             if os.path.isdir(os.path.join(calibdir, d)) if band in d]
         mjd_list = []
+        print(calib_folder_list)
         for calib_folder in calib_folder_list:
             print(calib_folder)
             print(calib_folder.split('_')[-1])
