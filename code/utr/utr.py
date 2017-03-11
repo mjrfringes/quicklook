@@ -4,7 +4,7 @@ import numpy as np
 try:
     from image import Image
 except:
-    from charis.image import Image
+    from quicklook.image import Image
 import fitramp
 import logging
 import re

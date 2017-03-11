@@ -5,7 +5,7 @@ from astropy.io import fits
 import copy
 from scipy import signal, ndimage, optimize, interpolate
 try:
-    from charis.image import Image
+    from quicklook.image import Image
 except:
     from image import Image
 import logging
