@@ -256,8 +256,6 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
                            header=header, gain=gain, noisefac=noisefac, 
                            maxcpus=maxcpus)
         
-    if saveramp:
-        inImage.write(re.sub('.*/', '', re.sub('.fits', '_ramp.fits', filename)))
 
     ################################################################
     # Read in necessary calibration files and extract the data cube.
@@ -309,7 +307,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     datacube.extrahead = fits.open(filename)[0].header
     print("Total time elapsed: %.0f seconds" % (time.time() - tstart))
 
-    return datacube
+    return datacube,inImage
 
 
 if __name__ == "__main__":
@@ -511,7 +509,7 @@ if __name__ == "__main__":
         ###############################################################
         # Reduce the cube
         ###############################################################        
-        cube = getcube(filename=filename[0], read_idx=read_idx,
+        cube,ramp = getcube(filename=filename[0], read_idx=read_idx,
                        mask=mask, gain=gain, 
                        saveramp=saveramp, maxcpus=maxcpus, 
                        calibdir=bestcalibdir, R=R, 
@@ -520,8 +518,13 @@ if __name__ == "__main__":
         if not saveivar:
             cube.ivar=None
         filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
-        cube.write(outdircube+filename)
         d = DS9('quicklook')
-        d.set('match wcs')
         d.set('file '+outdircube+filename)
+
+        cube.write(outdircube+filename)
+        filename = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename[0]))
+        if saveramp:
+            ramp.write(filename)
+        dramp = DS9('quicklook ramp')
+        dramp.set('file '+outdircube+filename)
         
