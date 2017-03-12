@@ -531,7 +531,7 @@ if __name__ == "__main__":
 
                 # plotting new cude
                 plt.clf()
-                img = cube[11,:,:]
+                img = cube.data[11,:,:]
                 ax.imshow(img,cmap=plt.cm.gray)
                 fig.canvas.draw()
 
