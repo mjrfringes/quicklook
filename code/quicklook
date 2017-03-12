@@ -26,6 +26,7 @@ import copy
 import shutil
 import sys
 import pkg_resources
+from pyds9 import DS9
 
 
 
@@ -517,4 +518,8 @@ if __name__ == "__main__":
                         
         if not saveivar:
             cube.ivar=None
-        cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0])))
+        filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
+        cube.write(filename)
+        d = DS9('quicklook')
+        d.set('file '+filename)
+        
