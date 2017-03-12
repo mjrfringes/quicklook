@@ -518,13 +518,13 @@ if __name__ == "__main__":
         if not saveivar:
             cube.ivar=None
         filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
-        d = DS9('quicklook')
+        d = DS9('quicklook_cube')
         d.set('file '+outdircube+filename)
         cube.write(outdircube+filename)
         
         filename = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename[0]))
         if saveramp:
             ramp.write(outdircube+filename)
-        dramp = DS9('quicklook ramp')
+        dramp = DS9('quicklook_ramp')
         dramp.set('file '+outdircube+filename)
         
