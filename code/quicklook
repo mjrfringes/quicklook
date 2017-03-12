@@ -287,17 +287,6 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     if datacube is None:
         raise ValueError("Datacube extraction method " + method + " not implemented.")
 
-    ################################################################
-    # Add WCS for the cube 
-    # for now assume the image is centered on the cube
-    # in practice, we will have to register things with
-    # the satellite spots
-    ################################################################ 
-    ydim,xdim = datacube.data[0].shape
-    rot_angle = 113 # empirically determined
-    utr.addWCS(datacube.header,xpix=ydim//2,ypix=xdim//2,
-                    xpixscale = -0.015/3600., ypixscale = 0.015/3600.,
-                    extrarot=rot_angle)      
 
 
     ################################################################
@@ -374,6 +363,22 @@ if __name__ == "__main__":
         saveivar = Config.getboolean('Extract', 'saveivar')
     except:
         saveivar = False
+    try:
+        xpixscale = Config.getboolean('Extract', 'xpixscale')
+        ypixscale = Config.getboolean('Extract', 'ypixscale')
+    except:
+        xpixscale = 0.015
+        ypixscale = 0.015
+    xpixscale /= 3600.
+    ypixscale /= 3600.
+    try:
+        extrarot = Config.getboolean('Extract', 'extrarot')
+    except:
+        extrarot = 113
+    try:
+        angle_sign = Config.getboolean('Extract', 'angle_sign')
+    except:
+        angle_sign = 1
         
     if band=='lowres':
         R = R_lowres
@@ -514,6 +519,18 @@ if __name__ == "__main__":
                        maxcpus=maxcpus, 
                        calibdir=bestcalibdir, R=R, 
                        smoothandmask=smoothandmask, flatfield=flatfield)
+
+        ################################################################
+        # Add WCS for the cube 
+        # for now assume the image is centered on the cube
+        # in practice, we will have to register things with
+        # the satellite spots
+        ################################################################ 
+        ydim,xdim = cube.data[0].shape
+        utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
+                        xpixscale = xpixscale, ypixscale = ypixscale,
+                        extrarot=extrarot,angle_sign=angle_sign)      
+
                         
         if not saveivar:
             cube.ivar=None
