@@ -301,16 +301,16 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
 if __name__ == "__main__":
 
     if len(sys.argv) < 2:
-        errstring = "This is a quicklook routine for CHARIS\n"
-        errstring += "Must call qiucklook with at least two arguments:\n"
+        errstring = "This is a quicklook watchdog for CHARIS\n"
+        errstring += "Must call quicklook watchdog with one or two arguments:\n"
         errstring += "1: single string parsed by glob matching the to be turned into a data cube\n"
-        errstring += "2: a .ini configuration file processed by ConfigParser\n"
+        errstring += "2: a .ini configuration file processed by ConfigParser (optional)\n"
         errstring += "If the file is a monochromatic flat, it means we want to a wavecal.\n"
         errstring += "Otherwise, look up the closest existing wavelength calibration routine.\n"
         print(errstring)
         exit()
 
-    filename = glob.glob(sys.argv[1])
+    folder = sys.argv[1]
     if len(sys.argv)==3:
         inifile = glob.glob(sys.argv[2])
     else:
@@ -385,123 +385,148 @@ if __name__ == "__main__":
     except:
         smoothandmask = True
 
-    ################################################################
-    # Need to determine whether this is a calibration or not
-    # If it is a calibration, need to run the calibration function
-    # if not, just do the reduction.
-    ################################################################
 
-#     if header['PIAA1'] != 'Open':
-    if header['OBJECT'] in ['1200','1550','2346']:
+
+    ### Watchdog loop
+    newest = None
+    plt.ion()
+    fig= plt.figure()
+    ax = add_subplot(111)
+    
+    
+    while True:
         
-        ###############################################################
-        # When doing a wavelength calibration, the object name is the
-        # wavelength in microns
-        ###############################################################
-        lam = int(header['OBJECT'])
+        new = min(glob.iglob(calibdir+'/CSRA*.fits'), key=os.path.getctime)
+        if !('cube' in new or 'ramp' in new or 'resid' in new):
+            newest = new
+            print('Found new file: %s', newest)
+
+
+            ################################################################
+            # Need to determine whether this is a calibration or not
+            # If it is a calibration, need to run the calibration function
+            # if not, just do the reduction.
+            ################################################################
+
+        #     if header['PIAA1'] != 'Open':
+            if header['OBJECT'] in ['1200','1550','2346']:
+                print('Found a new wavelength calibration')
         
-        prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
+                ###############################################################
+                # When doing a wavelength calibration, the object name is the
+                # wavelength in microns
+                ###############################################################
+                lam = int(header['OBJECT'])
+        
+                prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
 
-        ###############################################################
-        # Spectral resolutions for the final calibration files
-        ###############################################################
+                ###############################################################
+                # Spectral resolutions for the final calibration files
+                ###############################################################
 
-        if band in ['J', 'H', 'K']:
-            indir = os.path.join(prefix, "highres_" + band)
-        else:
-            indir = os.path.join(prefix, "lowres")
+                if band in ['J', 'H', 'K']:
+                    indir = os.path.join(prefix, "highres_" + band)
+                else:
+                    indir = os.path.join(prefix, "lowres")
 
-        mask = fits.open(os.path.join(prefix, 'mask.fits'))[0].data
+                mask = fits.open(os.path.join(prefix, 'mask.fits'))[0].data
 
-        ###############################################################
-        # Build a header object with calibration info
-        ###############################################################
-        hdr = fits.PrimaryHDU().header
-        hdr.clear()
-        hdr['calfname'] = (re.sub('.*/', '', filename[0]),'Monochromatic image used for calibration')
-        try:
-            hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
-        except:
-            hdr['cal_date'] = ('unavailable', 'MJD date of calibration image')
-        hdr['cal_lam'] = (lam, 'Wavelength of calibration image (nm)')
-        hdr['cal_band'] = (band, 'Band/mode of calibration image (J/H/K/lowres)')
+                ###############################################################
+                # Build a header object with calibration info
+                ###############################################################
+                hdr = fits.PrimaryHDU().header
+                hdr.clear()
+                hdr['calfname'] = (re.sub('.*/', '', filename[0]),'Monochromatic image used for calibration')
+                try:
+                    hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
+                except:
+                    hdr['cal_date'] = ('unavailable', 'MJD date of calibration image')
+                hdr['cal_lam'] = (lam, 'Wavelength of calibration image (nm)')
+                hdr['cal_band'] = (band, 'Band/mode of calibration image (J/H/K/lowres)')
         
         
-        ###############################################################
-        # Construct the wavelength calibration folder
-        ###############################################################
-        outdir = outdir+band+'_%.2f/' % (header['mjd'])
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+                ###############################################################
+                # Construct the wavelength calibration folder
+                ###############################################################
+                outdir = outdir+band+'_%.2f/' % (header['mjd'])
+                if not os.path.exists(outdir):
+                    os.makedirs(outdir)
         
-        ###############################################################
-        # Monochromatic flatfield image
-        ###############################################################
+                ###############################################################
+                # Monochromatic flatfield image
+                ###############################################################
 
-        denom = 1e-100
-        im = utr.calcramp(filename=filename[0], mask=mask, maxcpus=maxcpus)
-        num = im.data*im.ivar
-        denom = denom + im.ivar
-        inImage = Image(data=num/denom, ivar=mask*1./denom)
+                denom = 1e-100
+                im = utr.calcramp(filename=filename[0], mask=mask, maxcpus=maxcpus)
+                num = im.data*im.ivar
+                denom = denom + im.ivar
+                inImage = Image(data=num/denom, ivar=mask*1./denom)
 
         
-        ###############################################################
-        # Wavelength limits in nm
-        ###############################################################
+                ###############################################################
+                # Wavelength limits in nm
+                ###############################################################
 
-        if band == 'J':   
-            lam1, lam2 = [1155, 1340]
-        elif band == 'H':
-            lam1, lam2 = [1470, 1800]
-        elif band == 'K':
-            lam1, lam2 = [2005, 2380]
-        elif band == 'lowres':
-            lam1, lam2 = [1140, 2410]
-        else:
-            raise ValueError('Band must be one of: J, H, K, lowres')
+                if band == 'J':   
+                    lam1, lam2 = [1155, 1340]
+                elif band == 'H':
+                    lam1, lam2 = [1470, 1800]
+                elif band == 'K':
+                    lam1, lam2 = [2005, 2380]
+                elif band == 'lowres':
+                    lam1, lam2 = [1140, 2410]
+                else:
+                    raise ValueError('Band must be one of: J, H, K, lowres')
 
-        if lam < lam1 or lam > lam2:
-            raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
+                if lam < lam1 or lam > lam2:
+                    raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
 
-        ###############################################################
-        # Launch main routine
-        ###############################################################
-        buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
-                            order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
+                ###############################################################
+                # Launch main routine
+                ###############################################################
+                buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
+                                    order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
 
-        out = fits.HDUList(fits.PrimaryHDU(None, hdr))
-        out.writeto(outdir+'cal_params.fits', clobber=True)
+                out = fits.HDUList(fits.PrimaryHDU(None, hdr))
+                out.writeto(outdir+'cal_params.fits', clobber=True)
 
-        shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
+                shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
 
-        for fname in ['mask.fits', 'pixelflat.fits']:
-            shutil.copy(os.path.join(prefix, fname), outdir+ fname)
+                for fname in ['mask.fits', 'pixelflat.fits']:
+                    shutil.copy(os.path.join(prefix, fname), outdir+ fname)
 
-    else:
+            else:
+                print('Found a new file to reduce')
         
-        ###############################################################
-        # Finding the wavecal folder with the closest mjd
-        ###############################################################
-        current_mjd = header['mjd']
-#         calib_folder_list = next(os.walk(calibdir))[1]
-        calib_folder_list = [d for d in os.listdir(outdir) 
-                            if os.path.isdir(os.path.join(outdir, d)) if band in d]
-        mjd_list = []
-        for calib_folder in calib_folder_list:
-            mjd_list.append(float(calib_folder.split('_')[-1]))
-        closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
-        bestcalibdir = outdir+band+'_'+str(closest)
-        print('Selected best wavecal %s' % (band+'_'+str(closest)))
+                ###############################################################
+                # Finding the wavecal folder with the closest mjd
+                ###############################################################
+                current_mjd = header['mjd']
+        #         calib_folder_list = next(os.walk(calibdir))[1]
+                calib_folder_list = [d for d in os.listdir(outdir) 
+                                    if os.path.isdir(os.path.join(outdir, d)) if band in d]
+                mjd_list = []
+                for calib_folder in calib_folder_list:
+                    mjd_list.append(float(calib_folder.split('_')[-1]))
+                closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
+                bestcalibdir = outdir+band+'_'+str(closest)
+                print('Selected best wavecal %s' % (band+'_'+str(closest)))
         
-        ###############################################################
-        # Reduce the cube
-        ###############################################################        
-        cube = getcube(filename=filename[0], read_idx=read_idx,
-                       mask=mask, gain=gain, 
-                       saveramp=saveramp, maxcpus=maxcpus, 
-                       calibdir=bestcalibdir, R=R, 
-                       smoothandmask=smoothandmask, flatfield=flatfield)
+                ###############################################################
+                # Reduce the cube
+                ###############################################################        
+                cube = getcube(filename=filename[0], read_idx=read_idx,
+                               mask=mask, gain=gain, 
+                               saveramp=saveramp, maxcpus=maxcpus, 
+                               calibdir=bestcalibdir, R=R, 
+                               smoothandmask=smoothandmask, flatfield=flatfield)
                         
-        if not saveivar:
-            cube.ivar=None
-        cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0])))
+                if not saveivar:
+                    cube.ivar=None
+                cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0])))
+
+                # plotting new cude
+                plt.clf()
+                img = cube[11,:,:]
+                ax.imshow(img,cmap=plt.cm.gray)
+                fig.canvas.draw()
