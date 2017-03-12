@@ -492,7 +492,6 @@ if __name__ == "__main__":
             shutil.copy(os.path.join(prefix, fname), outdir+ fname)
 
     else:
-        d = DS9('quicklook')
         
         ###############################################################
         # Finding the wavecal folder with the closest mjd
@@ -521,6 +520,7 @@ if __name__ == "__main__":
             cube.ivar=None
         filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
         cube.write(filename)
+        d = DS9('quicklook')
         d.set('file '+filename)
         d.set('match wcs')
         
