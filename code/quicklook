@@ -337,7 +337,7 @@ if __name__ == "__main__":
     header = fits.open(filename[0])[0].header
     # which band are we in?
     band = header['Y_FLTNAM']
-    if band=='Broadband': band = 'lowres'
+    if band=='Broadband' or 'ND': band = 'lowres'
 
     ################################################################
     # Read the configuration file parameters
