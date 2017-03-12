@@ -397,7 +397,7 @@ if __name__ == "__main__":
     while True:
         
         new = min(glob.iglob(calibdir+'/CSRA*.fits'), key=os.path.getctime)
-        if !('cube' in new or 'ramp' in new or 'resid' in new):
+        if ~('cube' in new or 'ramp' in new or 'resid' in new):
             newest = new
             print('Found new file: %s', newest)
 
