@@ -298,7 +298,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     ydim,xdim = datacube.data[0].shape
     rot_angle = 113 # empirically determined
     utr.addWCS(datacube.header,xpix=ydim//2,ypix=xdim//2,
-                    xpixscale = 0.015/3600., ypixscale = 0.015/3600.,
+                    xpixscale = -0.015/3600., ypixscale = 0.015/3600.,
                     extrarot=rot_angle)      
 
 
