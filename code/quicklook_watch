@@ -310,13 +310,13 @@ if __name__ == "__main__":
         print(errstring)
         exit()
 
-    folder = sys.argv[1]
+    watchfolder = sys.argv[1]
     if len(sys.argv)==3:
         inifile = glob.glob(sys.argv[2])
     else:
         inifile = '/home/mrclean/quicklook/code/quicklook.ini'
     
-    if folder is None:
+    if watchfolder is None:
         raise ValueError("No matching CHARIS file found by extractcube.")
     if inifile is None:
         raise ValueError("No matching CHARIS .ini file found by extractcube.")
@@ -385,12 +385,12 @@ if __name__ == "__main__":
     
     while True:
         
-        new = min(glob.iglob(calibdir+'/CRSA*.fits'), key=os.path.getctime)
-        if ~('cube' in new or 'ramp' in new or 'resid' in new):
+        new = min(glob.iglob(watchfolder+'/CRSA*.fits'), key=os.path.getctime)
+        if ~('cube' in new or 'ramp' in new or 'resid' in new) and new != newest:
             newest = new
             print('Found new file: %s', newest)
 
-            header = fits.open(filename[0])[0].header
+            header = fits.open(newest)[0].header
             # which band are we in?
             band = header['Y_FLTNAM']
             if band=='Broadband': band = 'lowres'
@@ -438,7 +438,7 @@ if __name__ == "__main__":
                 ###############################################################
                 hdr = fits.PrimaryHDU().header
                 hdr.clear()
-                hdr['calfname'] = (re.sub('.*/', '', filename[0]),'Monochromatic image used for calibration')
+                hdr['calfname'] = (re.sub('.*/', '', newest),'Monochromatic image used for calibration')
                 try:
                     hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
                 except:
@@ -459,7 +459,7 @@ if __name__ == "__main__":
                 ###############################################################
 
                 denom = 1e-100
-                im = utr.calcramp(filename=filename[0], mask=mask, maxcpus=maxcpus)
+                im = utr.calcramp(filename=newest, mask=mask, maxcpus=maxcpus)
                 num = im.data*im.ivar
                 denom = denom + im.ivar
                 inImage = Image(data=num/denom, ivar=mask*1./denom)
@@ -517,7 +517,7 @@ if __name__ == "__main__":
                 ###############################################################
                 # Reduce the cube
                 ###############################################################        
-                cube = getcube(filename=filename[0], read_idx=read_idx,
+                cube = getcube(filename=newest, read_idx=read_idx,
                                mask=mask, gain=gain, 
                                saveramp=saveramp, maxcpus=maxcpus, 
                                calibdir=bestcalibdir, R=R, 
@@ -525,7 +525,7 @@ if __name__ == "__main__":
                         
                 if not saveivar:
                     cube.ivar=None
-                cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0])))
+                cube.write(re.sub('.fits', '_cube.fits', re.sub('.*/', '', newest)))
 
                 # plotting new cude
                 plt.clf()
