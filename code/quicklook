@@ -523,7 +523,7 @@ if __name__ == "__main__":
         cube.write(outdircube+filename_cube)
         print(outdircube+filename_cube)
         filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename[0]))
-        print(filename_ramp)
+        print(outdircube+filename_ramp)
 	if saveramp:
             ramp.write(outdircube+filename_ramp)
         dramp = DS9('quicklook_ramp')
