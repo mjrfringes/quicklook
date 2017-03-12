@@ -144,7 +144,7 @@ def buildcalibrations(inImage, inLam, mask, indir, outdir="./",
 
 
 def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/', 
-            bgsub=True, mask=True, gain=2, noisefac=0, saveramp=False, 
+            bgsub=True, mask=True, gain=2, noisefac=0, 
             R=30,method='optext', refine=False, suppressrn=False, fitshift=False, 
             flatfield=True, smoothandmask=True, saveresid=False,
             maxcpus=multiprocessing.cpu_count()):
@@ -511,7 +511,7 @@ if __name__ == "__main__":
         ###############################################################        
         cube,ramp = getcube(filename=filename[0], read_idx=read_idx,
                        mask=mask, gain=gain, 
-                       saveramp=saveramp, maxcpus=maxcpus, 
+                       maxcpus=maxcpus, 
                        calibdir=bestcalibdir, R=R, 
                        smoothandmask=smoothandmask, flatfield=flatfield)
                         
@@ -520,11 +520,11 @@ if __name__ == "__main__":
         filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
         d = DS9('quicklook')
         d.set('file '+outdircube+filename)
-
         cube.write(outdircube+filename)
+        
         filename = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename[0]))
         if saveramp:
-            ramp.write(filename)
+            ramp.write(outdircube+filename)
         dramp = DS9('quicklook ramp')
         dramp.set('file '+outdircube+filename)
         
