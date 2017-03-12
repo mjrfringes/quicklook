@@ -227,6 +227,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     # extract a cube.
     ################################################################
     
+    tstart = time.time()
     header = utr.metadata(filename)
 
     try:
