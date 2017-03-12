@@ -521,6 +521,6 @@ if __name__ == "__main__":
         filename = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename[0]))
         cube.write(filename)
         d = DS9('quicklook')
-        d.set('file '+filename)
         d.set('match wcs')
+        d.set('file '+filename)
         
