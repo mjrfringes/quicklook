@@ -324,7 +324,7 @@ if __name__ == "__main__":
     ### Watchdog loop
     newest = None
     plt.ion()
-    fig, ax= plt.add_subplots()
+    fig, ax= plt.subplots()
     
     
     while True:
