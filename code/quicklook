@@ -523,5 +523,5 @@ if __name__ == "__main__":
         cube.write(outdircube+filename)
         d = DS9('quicklook')
         d.set('match wcs')
-        d.set('file '+filename)
+        d.set('file '+outdircube+filename)
         
