@@ -316,76 +316,10 @@ if __name__ == "__main__":
     else:
         inifile = '/home/mrclean/quicklook/code/quicklook.ini'
     
-    if filename is None:
+    if folder is None:
         raise ValueError("No matching CHARIS file found by extractcube.")
     if inifile is None:
         raise ValueError("No matching CHARIS .ini file found by extractcube.")
-
-
-    header = fits.open(filename[0])[0].header
-    # which band are we in?
-    band = header['Y_FLTNAM']
-    if band=='Broadband': band = 'lowres'
-
-    ################################################################
-    # Read the configuration file parameters
-    ################################################################
-
-    Config = ConfigParser.ConfigParser()
-    Config.read(inifile)
-
-    read_0 = Config.getint('Ramp', 'read_0')
-    try:
-        read_1 = Config.getint('Ramp', 'read_f')
-    except:
-        read_1 = None
-    read_idx = [read_0, read_1]
-    try:
-        gain = Config.getfloat('Ramp', 'gain')
-    except:
-        gain = 2
-        
-    saveramp = Config.getboolean('Ramp', 'saveramp')
-
-    calibdir = Config.get('Calib', 'calibdir')
-    outdir = Config.get('Calib', 'outdir')
-    mask = Config.getboolean('Calib', 'mask')
-    try:
-        flatfield = Config.getboolean('Calib', 'flatfield')
-    except:
-        flatfield = True
-
-    R_lowres = Config.getint('Extract', 'R_lowres')
-    R_hires = Config.getint('Extract', 'R_hires')
-    try:
-        saveivar = Config.getboolean('Extract', 'saveivar')
-    except:
-        saveivar = False
-        
-    if band=='lowres':
-        R = R_lowres
-    else:
-        R = R_hires
-
-    ################################################################
-    # Maximum threads must be between 1 and cpu_count, inclusive
-    ################################################################
-
-    try:
-        maxcpus = Config.getint('Extract', 'maxcpus')
-        if maxcpus <= 0:
-            maxcpus = multiprocessing.cpu_count() + maxcpus
-        maxcpus = min(maxcpus, multiprocessing.cpu_count())
-        maxcpus = max(maxcpus, 1)
-    except:
-        maxcpus = multiprocessing.cpu_count()
-
-    try:
-        smoothandmask = Config.getboolean('Extract', 'smoothandmask')
-    except:
-        smoothandmask = True
-
-
 
     ### Watchdog loop
     newest = None
@@ -400,6 +334,72 @@ if __name__ == "__main__":
         if ~('cube' in new or 'ramp' in new or 'resid' in new):
             newest = new
             print('Found new file: %s', newest)
+
+            header = fits.open(filename[0])[0].header
+            # which band are we in?
+            band = header['Y_FLTNAM']
+            if band=='Broadband': band = 'lowres'
+
+            ################################################################
+            # Read the configuration file parameters
+            ################################################################
+
+            Config = ConfigParser.ConfigParser()
+            Config.read(inifile)
+
+            read_0 = Config.getint('Ramp', 'read_0')
+            try:
+                read_1 = Config.getint('Ramp', 'read_f')
+            except:
+                read_1 = None
+            read_idx = [read_0, read_1]
+            try:
+                gain = Config.getfloat('Ramp', 'gain')
+            except:
+                gain = 2
+        
+            saveramp = Config.getboolean('Ramp', 'saveramp')
+
+            calibdir = Config.get('Calib', 'calibdir')
+            outdir = Config.get('Calib', 'outdir')
+            mask = Config.getboolean('Calib', 'mask')
+            try:
+                flatfield = Config.getboolean('Calib', 'flatfield')
+            except:
+                flatfield = True
+
+            R_lowres = Config.getint('Extract', 'R_lowres')
+            R_hires = Config.getint('Extract', 'R_hires')
+            try:
+                saveivar = Config.getboolean('Extract', 'saveivar')
+            except:
+                saveivar = False
+        
+            if band=='lowres':
+                R = R_lowres
+            else:
+                R = R_hires
+
+            ################################################################
+            # Maximum threads must be between 1 and cpu_count, inclusive
+            ################################################################
+
+            try:
+                maxcpus = Config.getint('Extract', 'maxcpus')
+                if maxcpus <= 0:
+                    maxcpus = multiprocessing.cpu_count() + maxcpus
+                maxcpus = min(maxcpus, multiprocessing.cpu_count())
+                maxcpus = max(maxcpus, 1)
+            except:
+                maxcpus = multiprocessing.cpu_count()
+
+            try:
+                smoothandmask = Config.getboolean('Extract', 'smoothandmask')
+            except:
+                smoothandmask = True
+
+
+
 
 
             ################################################################
