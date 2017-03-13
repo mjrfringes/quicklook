@@ -540,11 +540,26 @@ if __name__ == "__main__":
         filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename[0]))
         print(outdircube+filename_ramp)
         print('Ramp statistics:')
-        print('Max pixel value: %f' % np.nanmax(ramp.data))
-        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*(ramp.header['LASTRD']-ramp.header['FIRSTRD'])))
-
+        ydim,xdim = ramp.data.shape
+        x = np.arange(ydim)
+        y = np.arange(xdim)
+        xc = 1014
+        yc = 930
+        rc=100
+        x -= xc
+        y -= yc
+        x,y = np.meshgrid(x,y)
+        r = np.sqrt(x**2+y**2)
+        mask = r>rc
+        ramp.data[mask] = 0
+        print('Mask: (xc,yc)=(%d,%d) w/ radius r=%d' % (xc,yc,rc))
+        print('Max pixel valueoutside of mask: %f' % np.nanmax(ramp.data))
+        Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
+        print('Nreads: %d' % Nreads)
+        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*Nreads))
         if saveramp:
             ramp.write(outdircube+filename_ramp)
+
         time.sleep(3)
         d = DS9('quicklook_cube')
         d.set('file '+outdircube+filename_cube)
