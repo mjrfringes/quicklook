@@ -551,12 +551,14 @@ if __name__ == "__main__":
         x,y = np.meshgrid(x,y)
         r = np.sqrt(x**2+y**2)
         mask = r>rc
-        ramp.data[mask] = 0
+        #ramp.data[mask] = 0
         print('Mask: (xc,yc)=(%d,%d) w/ radius r=%d' % (xc,yc,rc))
-        print('Max pixel valueoutside of mask: %f' % np.nanmax(ramp.data))
+        print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
         Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
+        print('99.8% percentile: %f' % np.percentile(ramp.data[mask],99.8))
         print('Nreads: %d' % Nreads)
-        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*Nreads))
+        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
+        print('99.8% percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.8)))
         if saveramp:
             ramp.write(outdircube+filename_ramp)
 
