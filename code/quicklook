@@ -326,8 +326,8 @@ if __name__ == "__main__":
     header = fits.open(filename[0])[0].header
     # which band are we in?
     band = header['Y_FLTNAM']
-    if band=='Broadband' or 'ND': band = 'lowres'
-
+    if band=='Broadband' or band=='ND': band = 'lowres'
+    print('Found new %s image' % band)
     ################################################################
     # Read the configuration file parameters
     ################################################################
@@ -528,8 +528,8 @@ if __name__ == "__main__":
         ################################################################ 
         ydim,xdim = cube.data[0].shape
         utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
-                        xpixscale = xpixscale, ypixscale = ypixscale,
-                        extrarot=extrarot,angle_sign=angle_sign)      
+                        xpixscale = -xpixscale, ypixscale = ypixscale,
+                        extrarot=extrarot,angle_sign=-1)      
 
                         
         if not saveivar:
@@ -553,14 +553,16 @@ if __name__ == "__main__":
         r = np.sqrt(x**2+y**2)
         mask = r>rc
         mask *= r<rout
-        ramp.data[mask] = 0
-        print('Mask: (xc,yc)=(%d,%d) w/ radius r=%d' % (xc,yc,rc))
+        #ramp.data[~mask] = 0
+        print('Mask: (xc,yc)=(%d,%d) between r=%d and r=%d' % (xc,yc,rc,rout))
         Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
         print('Nreads: %d' % Nreads)
         print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
-        print('99.8 percentile: %f' % np.percentile(ramp.data[mask],99.8))
+        print('99.9 percentile: %f' % np.percentile(ramp.data[mask],99.9))
         print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
-        print('99.8 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.8)))
+        print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
+        ramp.data *= Nreads
+        print('Ramp displayed is already multiplied by Nreads')
         if saveramp:
             ramp.write(outdircube+filename_ramp)
 
@@ -570,3 +572,4 @@ if __name__ == "__main__":
         dramp = DS9('quicklook_ramp')
         dramp.set('file '+outdircube+filename_ramp)
         
+
