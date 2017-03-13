@@ -541,7 +541,7 @@ if __name__ == "__main__":
         print(outdircube+filename_ramp)
         print('Ramp statistics:')
         print('Max pixel value: %f' % np.nanmax(ramp.data))
-        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*(ramp.header['LASTRD']-ramp.header['FIRSTRD'])
+        print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*(ramp.header['LASTRD']-ramp.header['FIRSTRD'])))
 
         if saveramp:
             ramp.write(outdircube+filename_ramp)
