@@ -543,8 +543,8 @@ if __name__ == "__main__":
         ydim,xdim = ramp.data.shape
         x = np.arange(ydim)
         y = np.arange(xdim)
-        xc = 1014
-        yc = 930
+        xc = 930
+        yc = 1014
         rc=100
         x -= xc
         y -= yc
@@ -553,10 +553,10 @@ if __name__ == "__main__":
         mask = r>rc
         #ramp.data[mask] = 0
         print('Mask: (xc,yc)=(%d,%d) w/ radius r=%d' % (xc,yc,rc))
+        print('Nreads: %d' % Nreads)
         print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
         Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
         print('99.8% percentile: %f' % np.percentile(ramp.data[mask],99.8))
-        print('Nreads: %d' % Nreads)
         print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
         print('99.8% percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.8)))
         if saveramp:
