@@ -542,7 +542,8 @@ if __name__ == "__main__":
         print('Ramp statistics:')
         print('Max pixel value: %f' % np.nanmax(ramp.data))
         print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*(ramp.header['LASTRD']-ramp.header['FIRSTRD'])
-	    if saveramp:
+
+        if saveramp:
             ramp.write(outdircube+filename_ramp)
         time.sleep(3)
         d = DS9('quicklook_cube')
