@@ -20,10 +20,12 @@ echo "Watching folder $folder"
 inotifywait -m -r -e create $folder | while read path action file
 do
     echo "Watching folder $folder"
-	echo "Found new filename: $file"
-	if [ $NOWAIT -eq 0 ] ; then
-		tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
-		sleep $tme	
+	if [[ "$file" =~ .*fits$ ]]; then
+		echo "Found new filename: $file"
+		if [ $NOWAIT -eq 0 ] ; then
+			tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
+			sleep $tme	
+		fi
+		/home/mrclean/quicklook/code/quicklook $path/$file &
 	fi
-	/home/mrclean/quicklook/code/quicklook $path/$file &
 done
