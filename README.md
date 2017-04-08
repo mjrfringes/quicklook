@@ -22,11 +22,12 @@ This should automatically find the correct folder where the data is being stored
 ```
 
 and it will monitor new files that are added in that folder.
- 
+
+
 # Call quicklook without the watchdog
- 
+
 The quicklook_watchdog script located in /home/mrclean/quicklook/ is just a watchdog bash script. It calls the following Python script:
- 
+
 ```
 ./home/mrclean/quicklook/code/quicklook
 ```
