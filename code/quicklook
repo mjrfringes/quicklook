@@ -420,7 +420,7 @@ if __name__ == "__main__":
             print("Found a new monochromatic flat at "+header['OBJECT']+". Running buildcal...")
         
 #             prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
-            prefix = "calibrations"
+            prefix = "/home/mrclean/quicklook/code/calibrations"
 
             ###############################################################
             # Spectral resolutions for the final calibration files
