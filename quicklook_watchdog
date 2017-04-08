@@ -1,0 +1,28 @@
+#!/usr/bin/bash
+
+NOWAIT=0
+
+#while getopt n FLAG; do
+#   case $FLAG in
+#      n) NOWAIT=1
+#       ;;
+#   esac
+#done
+
+if [ $# -ne 1 ]; then
+    DATE=`date -u --date='-12 hours' +%Y-%m-%d`
+    folder="/home/data/charis/$DATE"
+else
+    folder=$1
+fi
+echo "Watching folder $folder"
+inotifywait -m -e create $folder | while read path action file
+do
+        echo "Watching folder $folder"
+	echo "Found new filename: $file"
+	if [ $NOWAIT -eq 0 ] ; then
+		tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
+		sleep $tme	
+	fi
+	/home/mrclean/quicklook/code/quicklook $path/$file &
+done
