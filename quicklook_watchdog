@@ -15,8 +15,9 @@ if [ $# -ne 1 ]; then
 else
     folder=$1
 fi
+folder="/home/data/charis"
 echo "Watching folder $folder"
-inotifywait -m -e create $folder | while read path action file
+inotifywait -m -r -e create $folder | while read path action file
 do
         echo "Watching folder $folder"
 	echo "Found new filename: $file"
