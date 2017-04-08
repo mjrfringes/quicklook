@@ -580,6 +580,6 @@ if __name__ == "__main__":
                 d.set('file '+outdircube+filename_cube)
                 dramp = DS9('quicklook_ramp')
                 dramp.set('file '+outdircube+filename_ramp)
-            else:
-                print("File is not a fits file, passing")
+        else:
+            print("File is not a fits file, passing")
 
