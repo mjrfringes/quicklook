@@ -410,13 +410,14 @@ if __name__ == "__main__":
     ################################################################
 
 #     if header['PIAA1'] != 'Open':
-    if header['OBJECT'] in ['1200','1550','2346']:
+    if header['OBJECT'] in ['1200nm','1550nm','2346nm']:
         
         ###############################################################
         # When doing a wavelength calibration, the object name is the
         # wavelength in microns
         ###############################################################
-        lam = int(header['OBJECT'])
+        lam = int(header['OBJECT'].split('n')[0])
+        print("Found a new monochromatic flat at "+header['OBJECT']+". Running buildcal...")
         
         prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
 
