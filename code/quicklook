@@ -304,14 +304,19 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         errstring = "This is a quicklook routine for CHARIS\n"
         errstring += "Must call qiucklook with at least two arguments:\n"
-        errstring += "1: single string parsed by glob matching the to be turned into a data cube\n"
-        errstring += "2: a .ini configuration file processed by ConfigParser\n"
+        errstring += "1: a .ini configuration file processed by ConfigParser\n"
+        errstring += "2: single string parsed by glob matching the to be turned into a data cube\n"
         errstring += "If the file is a monochromatic flat, it means we want to a wavecal.\n"
         errstring += "Otherwise, look up the closest existing wavelength calibration routine.\n"
         print(errstring)
         exit()
 
-    filenames = glob.glob(sys.argv[1])
+    filenames = []
+    for i in range(1, len(sys.argv) - 1):
+        filenames += glob.glob(sys.argv[i])
+
+    if len(filenames) == 0:
+        raise ValueError("No matching CHARIS files found by extractcube.")
     print(filenames)
     if len(sys.argv)==3:
         inifile = glob.glob(sys.argv[2])
