@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-if [$# -ne 1]; then
-    DATE=`date +%Y-%m-%d`
+if [ $# -ne 1 ]; then
+    DATE=`date -u +%Y-%m-%d`
     folder="/home/data/charis/$DATE"
 else
     folder=$1
