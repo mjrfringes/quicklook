@@ -12,5 +12,32 @@ How to use it:
 
 ```
 cd /home/mrclean/quicklook/
-./quicklook
+./quicklook_watchdog
+```
+
+This should automatically find the correct folder where the data is being stored. In case you want to run quicklook in a particular folder, you can specify a folder such as:
+
+```
+./quicklook_watchdog /home/data/charis/scratch
+```
+
+ and it will monitor new files that are added in that folder.
+ 
+ # Call quicklook without the watchdog
+ 
+ The quicklook_watchdog script located in /home/mrclean/quicklook/ is just a watchdog bash script. It calls the following Python script:
+ 
+```
+./home/mrclean/quicklook/code/quicklook
+```
+which does all the heavy lifting. This script can be used independently to reduce data the following way:
+
+```
+./home/mrclean/quicklook/code/quicklook my_filename
+```
+
+This allows to bypass the wait times on the quicklook watchdog. The arguments can consist of any expression that can be parsed by Python's glob package, like:
+
+```
+./home/mrclean/quicklook/code/quicklook CRSA*.fits
 ```
