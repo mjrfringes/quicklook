@@ -312,7 +312,7 @@ if __name__ == "__main__":
         exit()
 
     filenames = []
-    for i in range(1, len(sys.argv) - 1):
+    for i in range(1, len(sys.argv)):
         filenames += glob.glob(sys.argv[i])
 
     if len(filenames) == 0:
