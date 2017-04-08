@@ -318,10 +318,10 @@ if __name__ == "__main__":
     if len(filenames) == 0:
         raise ValueError("No matching CHARIS files found by extractcube.")
     print(filenames)
-    if len(sys.argv)==3:
-        inifile = glob.glob(sys.argv[2])
-    else:
-        inifile = '/home/mrclean/quicklook/code/quicklook.ini'
+#     if len(sys.argv)==3:
+#         inifile = sys.argv[len(sys.argv) - 1]      
+#     else:
+    inifile = '/home/mrclean/quicklook/code/quicklook.ini'
     
     if filenames is None:
         raise ValueError("No matching CHARIS file found by extractcube.")
