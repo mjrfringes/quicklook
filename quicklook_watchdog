@@ -24,6 +24,7 @@ do
 		echo "Found new filename: $file"
 		if [ $NOWAIT -eq 0 ] ; then
 			tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
+			echo "Waiting for exposure to finish ($tme seconds)"
 			sleep $tme	
 		fi
 		/home/mrclean/quicklook/code/quicklook $path/$file &
