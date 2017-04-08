@@ -328,7 +328,7 @@ if __name__ == "__main__":
         # which band are we in?
         band = header['Y_FLTNAM']
         if band=='Broadband' or band=='ND': band = 'lowres'
-        print('Found new %s image' % band)
+        print('Found new %s image: %s' % (band,filename))
         ################################################################
         # Read the configuration file parameters
         ################################################################
