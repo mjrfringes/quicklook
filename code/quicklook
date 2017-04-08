@@ -329,256 +329,257 @@ if __name__ == "__main__":
         raise ValueError("No matching CHARIS .ini file found by extractcube.")
 
     for filename in filenames:
-        header = fits.open(filename)[0].header
-        # which band are we in?
-        band = header['Y_FLTNAM']
-        if band=='Broadband' or band=='ND': band = 'lowres'
-        print('Found new %s image: %s' % (band,filename))
-        ################################################################
-        # Read the configuration file parameters
-        ################################################################
+        if ".fits" not in filename:
+            header = fits.open(filename)[0].header
+            # which band are we in?
+            band = header['Y_FLTNAM']
+            if band=='Broadband' or band=='ND': band = 'lowres'
+            print('Found new %s image: %s' % (band,filename))
+            ################################################################
+            # Read the configuration file parameters
+            ################################################################
 
-        Config = ConfigParser.ConfigParser()
-        Config.read(inifile)
+            Config = ConfigParser.ConfigParser()
+            Config.read(inifile)
 
-        read_0 = Config.getint('Ramp', 'read_0')
-        try:
-            read_1 = Config.getint('Ramp', 'read_f')
-        except:
-            read_1 = None
-        read_idx = [read_0, read_1]
-        try:
-            gain = Config.getfloat('Ramp', 'gain')
-        except:
-            gain = 2
-        
-        saveramp = Config.getboolean('Ramp', 'saveramp')
-
-        calibdir = Config.get('Calib', 'calibdir')
-        outdir = Config.get('Calib', 'outdir')
-        outdircube = Config.get('Calib', 'outdircube')
-        mask = Config.getboolean('Calib', 'mask')
-        try:
-            flatfield = Config.getboolean('Calib', 'flatfield')
-        except:
-            flatfield = True
-
-        R_lowres = Config.getint('Extract', 'R_lowres')
-        R_hires = Config.getint('Extract', 'R_hires')
-        try:
-            saveivar = Config.getboolean('Extract', 'saveivar')
-        except:
-            saveivar = False
-        try:
-            xpixscale = Config.getboolean('Extract', 'xpixscale')
-            ypixscale = Config.getboolean('Extract', 'ypixscale')
-        except:
-            xpixscale = 0.015
-            ypixscale = 0.015
-        xpixscale /= 3600.
-        ypixscale /= 3600.
-        try:
-            extrarot = Config.getboolean('Extract', 'extrarot')
-        except:
-            extrarot = 113
-        try:
-            angle_sign = Config.getboolean('Extract', 'angle_sign')
-        except:
-            angle_sign = 1
-        
-        if band=='lowres':
-            R = R_lowres
-        else:
-            R = R_hires
-
-        ################################################################
-        # Maximum threads must be between 1 and cpu_count, inclusive
-        ################################################################
-
-        try:
-            maxcpus = Config.getint('Extract', 'maxcpus')
-            if maxcpus <= 0:
-                maxcpus = multiprocessing.cpu_count() + maxcpus
-            maxcpus = min(maxcpus, multiprocessing.cpu_count())
-            maxcpus = max(maxcpus, 1)
-        except:
-            maxcpus = multiprocessing.cpu_count()
-
-        try:
-            smoothandmask = Config.getboolean('Extract', 'smoothandmask')
-        except:
-            smoothandmask = True
-
-        ################################################################
-        # Need to determine whether this is a calibration or not
-        # If it is a calibration, need to run the calibration function
-        # if not, just do the reduction.
-        ################################################################
-
-    #     if header['PIAA1'] != 'Open':
-        if header['OBJECT'] in ['1200nm','1550nm','2346nm']:
-        
-            ###############################################################
-            # When doing a wavelength calibration, the object name is the
-            # wavelength in microns
-            ###############################################################
-            lam = int(header['OBJECT'].split('n')[0])
-            print("Found a new monochromatic flat at "+header['OBJECT']+". Running buildcal...")
-        
-#             prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
-            prefix = "/home/mrclean/quicklook/code/calibrations"
-
-            ###############################################################
-            # Spectral resolutions for the final calibration files
-            ###############################################################
-
-            if band in ['J', 'H', 'K']:
-                indir = os.path.join(prefix, "highres_" + band)
-            else:
-                indir = os.path.join(prefix, "lowres")
-
-            mask = fits.open(os.path.join(prefix, 'mask.fits'))[0].data
-
-            ###############################################################
-            # Build a header object with calibration info
-            ###############################################################
-            hdr = fits.PrimaryHDU().header
-            hdr.clear()
-            hdr['calfname'] = (re.sub('.*/', '', filename),'Monochromatic image used for calibration')
+            read_0 = Config.getint('Ramp', 'read_0')
             try:
-                hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
+                read_1 = Config.getint('Ramp', 'read_f')
             except:
-                hdr['cal_date'] = ('unavailable', 'MJD date of calibration image')
-            hdr['cal_lam'] = (lam, 'Wavelength of calibration image (nm)')
-            hdr['cal_band'] = (band, 'Band/mode of calibration image (J/H/K/lowres)')
+                read_1 = None
+            read_idx = [read_0, read_1]
+            try:
+                gain = Config.getfloat('Ramp', 'gain')
+            except:
+                gain = 2
         
-        
-            ###############################################################
-            # Construct the wavelength calibration folder
-            ###############################################################
-            outdir = outdir+band+'_%.2f/' % (header['mjd'])
-            if not os.path.exists(outdir):
-                os.makedirs(outdir)
-        
-            ###############################################################
-            # Monochromatic flatfield image
-            ###############################################################
+            saveramp = Config.getboolean('Ramp', 'saveramp')
 
-            denom = 1e-100
-            im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
-            num = im.data*im.ivar
-            denom = denom + im.ivar
-            inImage = Image(data=num/denom, ivar=mask*1./denom)
+            calibdir = Config.get('Calib', 'calibdir')
+            outdir = Config.get('Calib', 'outdir')
+            outdircube = Config.get('Calib', 'outdircube')
+            mask = Config.getboolean('Calib', 'mask')
+            try:
+                flatfield = Config.getboolean('Calib', 'flatfield')
+            except:
+                flatfield = True
 
+            R_lowres = Config.getint('Extract', 'R_lowres')
+            R_hires = Config.getint('Extract', 'R_hires')
+            try:
+                saveivar = Config.getboolean('Extract', 'saveivar')
+            except:
+                saveivar = False
+            try:
+                xpixscale = Config.getboolean('Extract', 'xpixscale')
+                ypixscale = Config.getboolean('Extract', 'ypixscale')
+            except:
+                xpixscale = 0.015
+                ypixscale = 0.015
+            xpixscale /= 3600.
+            ypixscale /= 3600.
+            try:
+                extrarot = Config.getboolean('Extract', 'extrarot')
+            except:
+                extrarot = 113
+            try:
+                angle_sign = Config.getboolean('Extract', 'angle_sign')
+            except:
+                angle_sign = 1
         
-            ###############################################################
-            # Wavelength limits in nm
-            ###############################################################
-
-            if band == 'J':   
-                lam1, lam2 = [1155, 1340]
-            elif band == 'H':
-                lam1, lam2 = [1470, 1800]
-            elif band == 'K':
-                lam1, lam2 = [2005, 2380]
-            elif band == 'lowres':
-                lam1, lam2 = [1140, 2410]
+            if band=='lowres':
+                R = R_lowres
             else:
-                raise ValueError('Band must be one of: J, H, K, lowres')
-
-            if lam < lam1 or lam > lam2:
-                raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
-
-            ###############################################################
-            # Launch main routine
-            ###############################################################
-            buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
-                                order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
-
-            out = fits.HDUList(fits.PrimaryHDU(None, hdr))
-            out.writeto(outdir+'cal_params.fits', clobber=True)
-
-            shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
-
-            for fname in ['mask.fits', 'pixelflat.fits']:
-                shutil.copy(os.path.join(prefix, fname), outdir+ fname)
-
-        else:
-        
-            ###############################################################
-            # Finding the wavecal folder with the closest mjd
-            ###############################################################
-            current_mjd = header['mjd']
-    #         calib_folder_list = next(os.walk(calibdir))[1]
-            calib_folder_list = [d for d in os.listdir(outdir) 
-                                if os.path.isdir(os.path.join(outdir, d)) if band in d]
-            mjd_list = []
-            for calib_folder in calib_folder_list:
-                mjd_list.append(float(calib_folder.split('_')[-1]))
-            closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
-            bestcalibdir = outdir+band+'_'+str(closest)
-            print('Selected best wavecal %s' % (band+'_'+str(closest)))
-        
-            ###############################################################
-            # Reduce the cube
-            ###############################################################        
-            cube,ramp = getcube(filename=filename, read_idx=read_idx,
-                           mask=mask, gain=gain, 
-                           maxcpus=maxcpus, 
-                           calibdir=bestcalibdir, R=R, 
-                           smoothandmask=smoothandmask, flatfield=flatfield)
+                R = R_hires
 
             ################################################################
-            # Add WCS for the cube 
-            # for now assume the image is centered on the cube
-            # in practice, we will have to register things with
-            # the satellite spots
-            ################################################################ 
-            ydim,xdim = cube.data[0].shape
-            utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
-                            xpixscale = -xpixscale, ypixscale = ypixscale,
-                            extrarot=extrarot,angle_sign=-1)      
+            # Maximum threads must be between 1 and cpu_count, inclusive
+            ################################################################
+
+            try:
+                maxcpus = Config.getint('Extract', 'maxcpus')
+                if maxcpus <= 0:
+                    maxcpus = multiprocessing.cpu_count() + maxcpus
+                maxcpus = min(maxcpus, multiprocessing.cpu_count())
+                maxcpus = max(maxcpus, 1)
+            except:
+                maxcpus = multiprocessing.cpu_count()
+
+            try:
+                smoothandmask = Config.getboolean('Extract', 'smoothandmask')
+            except:
+                smoothandmask = True
+
+            ################################################################
+            # Need to determine whether this is a calibration or not
+            # If it is a calibration, need to run the calibration function
+            # if not, just do the reduction.
+            ################################################################
+
+        #     if header['PIAA1'] != 'Open':
+            if header['OBJECT'] in ['1200nm','1550nm','2346nm']:
+        
+                ###############################################################
+                # When doing a wavelength calibration, the object name is the
+                # wavelength in microns
+                ###############################################################
+                lam = int(header['OBJECT'].split('n')[0])
+                print("Found a new monochromatic flat at "+header['OBJECT']+". Running buildcal...")
+        
+    #             prefix = pkg_resources.resource_filename('quicklook', 'calibrations')
+                prefix = "/home/mrclean/quicklook/code/calibrations"
+
+                ###############################################################
+                # Spectral resolutions for the final calibration files
+                ###############################################################
+
+                if band in ['J', 'H', 'K']:
+                    indir = os.path.join(prefix, "highres_" + band)
+                else:
+                    indir = os.path.join(prefix, "lowres")
+
+                mask = fits.open(os.path.join(prefix, 'mask.fits'))[0].data
+
+                ###############################################################
+                # Build a header object with calibration info
+                ###############################################################
+                hdr = fits.PrimaryHDU().header
+                hdr.clear()
+                hdr['calfname'] = (re.sub('.*/', '', filename),'Monochromatic image used for calibration')
+                try:
+                    hdr['cal_date'] = (header['mjd'],'MJD date of calibration image')
+                except:
+                    hdr['cal_date'] = ('unavailable', 'MJD date of calibration image')
+                hdr['cal_lam'] = (lam, 'Wavelength of calibration image (nm)')
+                hdr['cal_band'] = (band, 'Band/mode of calibration image (J/H/K/lowres)')
+        
+        
+                ###############################################################
+                # Construct the wavelength calibration folder
+                ###############################################################
+                outdir = outdir+band+'_%.2f/' % (header['mjd'])
+                if not os.path.exists(outdir):
+                    os.makedirs(outdir)
+        
+                ###############################################################
+                # Monochromatic flatfield image
+                ###############################################################
+
+                denom = 1e-100
+                im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
+                num = im.data*im.ivar
+                denom = denom + im.ivar
+                inImage = Image(data=num/denom, ivar=mask*1./denom)
+
+        
+                ###############################################################
+                # Wavelength limits in nm
+                ###############################################################
+
+                if band == 'J':   
+                    lam1, lam2 = [1155, 1340]
+                elif band == 'H':
+                    lam1, lam2 = [1470, 1800]
+                elif band == 'K':
+                    lam1, lam2 = [2005, 2380]
+                elif band == 'lowres':
+                    lam1, lam2 = [1140, 2410]
+                else:
+                    raise ValueError('Band must be one of: J, H, K, lowres')
+
+                if lam < lam1 or lam > lam2:
+                    raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
+
+                ###############################################################
+                # Launch main routine
+                ###############################################################
+                buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
+                                    order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
+
+                out = fits.HDUList(fits.PrimaryHDU(None, hdr))
+                out.writeto(outdir+'cal_params.fits', clobber=True)
+
+                shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
+
+                for fname in ['mask.fits', 'pixelflat.fits']:
+                    shutil.copy(os.path.join(prefix, fname), outdir+ fname)
+
+            else:
+        
+                ###############################################################
+                # Finding the wavecal folder with the closest mjd
+                ###############################################################
+                current_mjd = header['mjd']
+        #         calib_folder_list = next(os.walk(calibdir))[1]
+                calib_folder_list = [d for d in os.listdir(outdir) 
+                                    if os.path.isdir(os.path.join(outdir, d)) if band in d]
+                mjd_list = []
+                for calib_folder in calib_folder_list:
+                    mjd_list.append(float(calib_folder.split('_')[-1]))
+                closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
+                bestcalibdir = outdir+band+'_'+str(closest)
+                print('Selected best wavecal %s' % (band+'_'+str(closest)))
+        
+                ###############################################################
+                # Reduce the cube
+                ###############################################################        
+                cube,ramp = getcube(filename=filename, read_idx=read_idx,
+                               mask=mask, gain=gain, 
+                               maxcpus=maxcpus, 
+                               calibdir=bestcalibdir, R=R, 
+                               smoothandmask=smoothandmask, flatfield=flatfield)
+
+                ################################################################
+                # Add WCS for the cube 
+                # for now assume the image is centered on the cube
+                # in practice, we will have to register things with
+                # the satellite spots
+                ################################################################ 
+                ydim,xdim = cube.data[0].shape
+                utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
+                                xpixscale = -xpixscale, ypixscale = ypixscale,
+                                extrarot=extrarot,angle_sign=-1)      
 
                         
-            if not saveivar:
-                cube.ivar=None
-            filename_cube = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename))
-            cube.write(outdircube+filename_cube)
-            print(outdircube+filename_cube)
-            filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename))
-            print(outdircube+filename_ramp)
-            print('Ramp statistics:')
-            ydim,xdim = ramp.data.shape
-            x = np.arange(ydim)
-            y = np.arange(xdim)
-            xc = 930
-            yc = 1014
-            rc=100
-            rout=200
-            x -= xc
-            y -= yc
-            x,y = np.meshgrid(x,y)
-            r = np.sqrt(x**2+y**2)
-            mask = r>rc
-            mask *= r<rout
-            #ramp.data[~mask] = 0
-            print('Mask: (xc,yc)=(%d,%d) between r=%d and r=%d' % (xc,yc,rc,rout))
-            Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
-            print('Nreads: %d' % Nreads)
-            print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
-            print('99.9 percentile: %f' % np.percentile(ramp.data[mask],99.9))
-            print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
-            print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
-            ramp.data *= Nreads
-            print('Ramp displayed is already multiplied by Nreads')
-            if saveramp:
-                ramp.write(outdircube+filename_ramp)
+                if not saveivar:
+                    cube.ivar=None
+                filename_cube = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename))
+                cube.write(outdircube+filename_cube)
+                print(outdircube+filename_cube)
+                filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename))
+                print(outdircube+filename_ramp)
+                print('Ramp statistics:')
+                ydim,xdim = ramp.data.shape
+                x = np.arange(ydim)
+                y = np.arange(xdim)
+                xc = 930
+                yc = 1014
+                rc=100
+                rout=200
+                x -= xc
+                y -= yc
+                x,y = np.meshgrid(x,y)
+                r = np.sqrt(x**2+y**2)
+                mask = r>rc
+                mask *= r<rout
+                #ramp.data[~mask] = 0
+                print('Mask: (xc,yc)=(%d,%d) between r=%d and r=%d' % (xc,yc,rc,rout))
+                Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
+                print('Nreads: %d' % Nreads)
+                print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
+                print('99.9 percentile: %f' % np.percentile(ramp.data[mask],99.9))
+                print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
+                print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
+                ramp.data *= Nreads
+                print('Ramp displayed is already multiplied by Nreads')
+                if saveramp:
+                    ramp.write(outdircube+filename_ramp)
 
-            time.sleep(3)
-            if len(filenames)==1:
+                time.sleep(3)
                 d = DS9('quicklook_cube')
                 d.set('file '+outdircube+filename_cube)
                 dramp = DS9('quicklook_ramp')
                 dramp.set('file '+outdircube+filename_ramp)
-        
+            else:
+                print("File is not a fits file, passing")
 

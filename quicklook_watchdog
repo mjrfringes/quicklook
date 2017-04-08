@@ -19,7 +19,7 @@ folder="/home/data/charis"
 echo "Watching folder $folder"
 inotifywait -m -r -e create $folder | while read path action file
 do
-        echo "Watching folder $folder"
+    echo "Watching folder $folder"
 	echo "Found new filename: $file"
 	if [ $NOWAIT -eq 0 ] ; then
 		tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
