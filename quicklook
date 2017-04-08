@@ -1,0 +1,8 @@
+#!/usr/bin/bash
+inotifywait -m -e create $1 | while read path action file
+do
+	echo "Found new filename: $file"
+	tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
+	sleep $tme	
+	/home/mrclean/quicklook/code/quicklook $path/$file &
+done

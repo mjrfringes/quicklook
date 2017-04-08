@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+
+# This script is released under an "MIT License"; see https://opensource.org/licenses/MIT 
+# The MIT License (MIT)
+# Copyright (c) 2016 Henry Roe (hroe@hroe.me)
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+import gzip
+import sys
+
+if len(sys.argv) < 3:
+    print("""
+Usage: grepfits keywords filename ...
+  keywords:  can be comma-separated list, e.g.  DATE,EXPTIME,RA,DEC
+             or, 
+             a single or double quote enclosed string with comma or space 
+             separators,  e.g.:   \"DATE EXPTIME RA,DEC\"
+ filename:  either a filename, space separated list of filenames,  
+             or an expandable pattern
+             e.g.:   x0101.fits.gz
+             e.g.:   x*.fits.gz
+""")
+    exit()
+
+keywords = sys.argv[1].replace(',', ' ').split()
+
+new_output = ['filename']
+for cur_keyword in keywords:
+    new_output.append(cur_keyword)
+output = [new_output]
+
+for cur_filename in sys.argv[2:]:
+    new_output = [cur_filename + ':']
+    if cur_filename.endswith('.gz'):
+        openfile = lambda x: gzip.open(x, 'r')
+    else:
+        openfile = lambda x: open(x, 'r')
+    with openfile(cur_filename) as f:
+        hdr = []
+        curline = f.read(80)
+        while not curline.startswith('END                            '):
+            hdr.append(curline)
+            curline = f.read(80)
+    for cur_keyword in keywords:
+        search_keyword = '{0:8s}='.format(cur_keyword)
+        possible_lines = [a for a in hdr if a.startswith(search_keyword)]
+        if len(possible_lines) == 0:
+            continue
+        possible_lines = possible_lines[0]   # TODO: fix that if more than one match, only using first
+        new_item = possible_lines.split('=', 1)[1].split('/', 1)[0].strip()
+        if new_item.startswith('"') or new_item.startswith("'"):
+            new_item = new_item[1:]
+        if new_item.endswith('"') or new_item.endswith("'"):
+            new_item = new_item[:-1]
+        new_output.append(new_item)
+    output.append(new_output)
+
+# output_lengths = [max([len(entry) for entry in outputline]) for outputline in output]
+output_lengths = [max([len(outputline[position]) for outputline in output]) for position in range(len(output[0]))]
+nspaces = 1
+for outputline in output:
+    outstr = ('{0:' + str(output_lengths[0]) + 's}').format(outputline[0])
+    for i,outlen in enumerate(output_lengths[1:]):
+        outstr += ' '*nspaces + ('{0:' + str(outlen) + 's}').format(outputline[i+1])
+    print(outstr)
+
+
