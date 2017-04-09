@@ -12,6 +12,7 @@ do
         tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
         # wait for exposure to finish
         sleep $tme	
+        sleep 2
         # call the quicklook routine on the newfile
 		/home/mrclean/quicklook/code/quicklook $path/$file &
 	else
