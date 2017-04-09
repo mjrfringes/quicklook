@@ -469,6 +469,12 @@ if __name__ == "__main__":
                 num = im.data*im.ivar
                 denom = denom + im.ivar
                 inImage = Image(data=num/denom, ivar=mask*1./denom)
+                filename_ramp = re.sub('.fits', '_calramp.fits', re.sub('.*/', '', filename))
+                inImage.write(outdircube+filename_ramp,clobber=True)
+                
+                time.sleep(2)
+                dramp = DS9('quicklook_ramp')
+                dramp.set('file '+outdircube+filename_ramp)
 
     
                 ###############################################################
@@ -502,8 +508,10 @@ if __name__ == "__main__":
 
                 for fname in ['mask.fits', 'pixelflat.fits']:
                     shutil.copy(os.path.join(prefix, fname), outdir+ fname)
+                    
+                
             else:
-                print("%s already exists, skipping buildcal. Delete folder if you want to overwrite.")            
+                print("%s already exists, skipping buildcal. Delete folder if you want to overwrite." % outdir)            
 
         else:
     
@@ -518,6 +526,18 @@ if __name__ == "__main__":
             for calib_folder in calib_folder_list:
                 mjd_list.append(float(calib_folder.split('_')[-1]))
             closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
+            ###############################################################
+            # Verify that all the necessary files are present; if not,
+            # it means that the buildcal either is not done, or didn't succeed
+            # If so, go to the next-closest date
+            ###############################################################
+            file_list = os.listdir(outdir+band+'_'+str(closest))
+            if "mask.fits" not in file_list:
+                print("Most recent wavelength calibration hasn't finished yet or didn't succeed. Using other calibration."
+                mjd_list.remove(closest)
+                closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
+            
+            
             bestcalibdir = outdir+band+'_'+str(closest)
             print('Selected best wavecal %s' % (band+'_'+str(closest)))
     
@@ -545,7 +565,7 @@ if __name__ == "__main__":
             if not saveivar:
                 cube.ivar=None
             filename_cube = re.sub('.fits', '_cube.fits', re.sub('.*/', '', filename))
-            cube.write(outdircube+filename_cube)
+            cube.write(outdircube+filename_cube,clobber=True)
             print(outdircube+filename_cube)
             filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename))
             print(outdircube+filename_ramp)
@@ -574,7 +594,7 @@ if __name__ == "__main__":
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
             if saveramp:
-                ramp.write(outdircube+filename_ramp)
+                ramp.write(outdircube+filename_ramp,clobber=True)
 
             time.sleep(3)
             d = DS9('quicklook_cube')
