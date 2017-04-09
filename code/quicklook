@@ -460,48 +460,50 @@ if __name__ == "__main__":
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
     
-            ###############################################################
-            # Monochromatic flatfield image
-            ###############################################################
+                ###############################################################
+                # Monochromatic flatfield image
+                ###############################################################
 
-            denom = 1e-100
-            im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
-            num = im.data*im.ivar
-            denom = denom + im.ivar
-            inImage = Image(data=num/denom, ivar=mask*1./denom)
+                denom = 1e-100
+                im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
+                num = im.data*im.ivar
+                denom = denom + im.ivar
+                inImage = Image(data=num/denom, ivar=mask*1./denom)
 
     
-            ###############################################################
-            # Wavelength limits in nm
-            ###############################################################
+                ###############################################################
+                # Wavelength limits in nm
+                ###############################################################
 
-            if band == 'J':   
-                lam1, lam2 = [1155, 1340]
-            elif band == 'H':
-                lam1, lam2 = [1470, 1800]
-            elif band == 'K':
-                lam1, lam2 = [2005, 2380]
-            elif band == 'lowres':
-                lam1, lam2 = [1140, 2410]
+                if band == 'J':   
+                    lam1, lam2 = [1155, 1340]
+                elif band == 'H':
+                    lam1, lam2 = [1470, 1800]
+                elif band == 'K':
+                    lam1, lam2 = [2005, 2380]
+                elif band == 'lowres':
+                    lam1, lam2 = [1140, 2410]
+                else:
+                    raise ValueError('Band must be one of: J, H, K, lowres')
+
+                if lam < lam1 or lam > lam2:
+                    raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
+
+                ###############################################################
+                # Launch main routine
+                ###############################################################
+                buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
+                                    order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
+
+                out = fits.HDUList(fits.PrimaryHDU(None, hdr))
+                out.writeto(outdir+'cal_params.fits', clobber=True)
+
+                shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
+
+                for fname in ['mask.fits', 'pixelflat.fits']:
+                    shutil.copy(os.path.join(prefix, fname), outdir+ fname)
             else:
-                raise ValueError('Band must be one of: J, H, K, lowres')
-
-            if lam < lam1 or lam > lam2:
-                raise ValueError("Error: wavelength " + str(lam) + " outside range (" + str(lam1) + ", " + str(lam2) + ") of mode " + band)
-
-            ###############################################################
-            # Launch main routine
-            ###############################################################
-            buildcalibrations(inImage, lam, mask, indir, lam1=lam1, lam2=lam2, R=R,
-                                order=3, header=hdr, ncpus=maxcpus, outdir=outdir)
-
-            out = fits.HDUList(fits.PrimaryHDU(None, hdr))
-            out.writeto(outdir+'cal_params.fits', clobber=True)
-
-            shutil.copy(os.path.join(indir, 'lensletflat.fits'), outdir+'lensletflat.fits')
-
-            for fname in ['mask.fits', 'pixelflat.fits']:
-                shutil.copy(os.path.join(prefix, fname), outdir+ fname)
+                print("%s already exists, skipping buildcal. Delete folder if you want to overwrite.")            
 
         else:
     
