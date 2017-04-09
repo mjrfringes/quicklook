@@ -533,7 +533,7 @@ if __name__ == "__main__":
             ###############################################################
             file_list = os.listdir(outdir+band+'_'+str(closest))
             if "mask.fits" not in file_list:
-                print("Most recent wavelength calibration hasn't finished yet or didn't succeed. Using other calibration."
+                print("Most recent wavelength calibration hasn't finished yet or didn't succeed. Using other calibration.")
                 mjd_list.remove(closest)
                 closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
             
