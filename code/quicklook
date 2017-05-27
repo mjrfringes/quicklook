@@ -576,7 +576,7 @@ if __name__ == "__main__":
             print(outdircube+filename_ramp)
             print('Ramp statistics:')
             
-            center = ndimage.measurements.center_of_mass(ramp)
+            center = ndimage.measurements.center_of_mass(ramp.data)
             
             ydim,xdim = ramp.data.shape
             x = np.arange(ydim)

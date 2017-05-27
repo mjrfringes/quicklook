@@ -8,12 +8,14 @@ do
     # test if new file is a fits file
     if [[ "$file" =~ .*fits$ ]]; then 
         echo "Found new filename: $file"
+        echo "Waiting for exposure to finish..."
         # find the EXPTIME keyword value in FITS file, to know how much to wait
         tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
         # wait for exposure to finish
         sleep $tme	
         sleep 2
         # call the quicklook routine on the newfile
+        echo "Processing file..."
 		/home/mrclean/quicklook/code/quicklook $path/$file &
 	else
 	    echo "$file is not a FITS file - ignoring"
