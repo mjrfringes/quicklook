@@ -349,7 +349,8 @@ if __name__ == "__main__":
         header = fits.open(filename)[0].header
         
         out = inspectFiles([filename])
-        print(out.to_string())
+#         print(out.to_string())
+        print out
         
         # which band are we in?
         band = header['Y_FLTNAM']
