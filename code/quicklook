@@ -628,7 +628,7 @@ if __name__ == "__main__":
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
             print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("==============================Statistics==================================")
+            print("========================== Ramp  Statistics ==============================")
             print(df.to_string())
             print("==========================================================================")
 
@@ -642,4 +642,5 @@ if __name__ == "__main__":
             d.set('file '+outdircube+filename_cube)
             dramp = DS9('quicklook_ramp')
             dramp.set('file '+outdircube+filename_ramp)
+            dramp.set('annulus %f %f %d %d' % (center[1],center[0],rc,rout))
 
