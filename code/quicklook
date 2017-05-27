@@ -31,7 +31,7 @@ from pyds9 import DS9
 import pandas as pd
 
 
-def inspectFiles(filename,header):
+def inspectFiles(filename,hdr):
     keylist = ['Name','OBJECT','EXPTIME','RA','DEC','Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM','X_GRDST','X_GRDAMP']
     df = pd.DataFrame(columns=keylist)
     try:
@@ -639,8 +639,8 @@ if __name__ == "__main__":
             out = inspectFiles(filename , header)
     #         print(out.to_string())
             print(out[['Name','OBJECT','EXPTIME','RA','DEC']].to_string(index=False))
-            print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']][1].to_string(index=False))
-            print(out[['X_GRDST','X_GRDAMP']][1].to_string(index=False))
+            print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']].to_string(index=False))
+            print(out[['X_GRDST','X_GRDAMP']].to_string(index=False))
 
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
