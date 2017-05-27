@@ -628,17 +628,9 @@ if __name__ == "__main__":
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
             print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("==============================Statistics================================")
+            print("==============================Statistics==================================")
             print(df.to_string())
-            print("========================================================================")
-
-            print('Nreads: %d' % Nreads)
-            print('Image centroid: %.2f,%.2f' % center)
-            print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("==============================Statistics================================")
-            print(df.to_string())
-            print("========================================================================")
-
+            print("==========================================================================")
 
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
