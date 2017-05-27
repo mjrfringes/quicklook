@@ -555,7 +555,7 @@ if __name__ == "__main__":
             # the satellite spots
             ################################################################ 
             ydim,xdim = cube.data[0].shape
-            utr.addWCS(datacube.header,xpix=ydim//2,ypix=xdim//2,
+            utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
                             xpixscale = -0.0164/3600., ypixscale = 0.0164/3600.,
                             extrarot=rot_angle)      
 
