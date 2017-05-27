@@ -31,19 +31,17 @@ from pyds9 import DS9
 import pandas as pd
 
 
-def inspectFiles(infiles):
+def inspectFiles(filename,header):
     keylist = ['Name','OBJECT','EXPTIME','RA','DEC','Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM','X_GRDST','X_GRDAMP']
     df = pd.DataFrame(columns=keylist)
-    for filename in infiles:
-        try:
-            hdr = fits.open(filename)[3].header # this is original extension
-            row = [filename.split("/")[-1]]
-            for key in keylist[1:]:
-                row+=[hdr[key]]
-            df = df.append(pd.DataFrame(data=[row],columns=keylist),ignore_index=True)
-        except:
-            print("Original extension not found. Skipping this file.")
-    
+    try:
+        row = [filename.split("/")[-1]]
+        for key in keylist[1:]:
+            row+=[hdr[key]]
+        df = df.append(pd.DataFrame(data=[row],columns=keylist),ignore_index=True)
+    except:
+        print("Original extension not found. Skipping this file.")
+
     return df
 
 
@@ -638,9 +636,9 @@ if __name__ == "__main__":
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[mask],99.99)}
             df = df.append(d,ignore_index=True)
             
-            out = inspectFiles([outdircube+filename_ramp])
+            out = inspectFiles(filename , header)
     #         print(out.to_string())
-            print(out[['Name','OBJECT','EXPTIME','RA','DEC']][1].to_string(index=False))
+            print(out[['Name','OBJECT','EXPTIME','RA','DEC']].to_string(index=False))
             print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']][1].to_string(index=False))
             print(out[['X_GRDST','X_GRDAMP']][1].to_string(index=False))
 
