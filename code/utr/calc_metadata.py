@@ -210,7 +210,7 @@ def metadata(filename, header=fits.PrimaryHDU().header, clear=True):
     return header
 
 
-def addWCS(header,xpix,ypix,xpixscale = 0.015/3600.,ypixscale = -0.015/3600.,extrarot=0.0,angle_sign=1):
+def addWCS(header,xpix,ypix,xpixscale = -0.015/3600.,ypixscale = 0.015/3600.,extrarot=113.):
     
     '''
     Add the proper keywords to align the cube into the World Coordinate System.
@@ -235,25 +235,35 @@ def addWCS(header,xpix,ypix,xpixscale = 0.015/3600.,ypixscale = -0.015/3600.,ext
     '''
     ra = header['ra']
     dec = header['dec']
-    c = coord.SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='fk5')
+    try:
+        c = coord.SkyCoord(ra=ra, dec=dec, unit=(u.hourangle, u.deg), frame='fk5')
+    except:
+        return
         
     ####################################################################
     # Compute the FITS header rotation and scale matrix to properly 
     # align the image in FITS viewers
     ####################################################################
-    header['XPIXSCAL'] = (xpixscale, 'Degrees/pixel')
-    header['YPIXSCAL'] = (ypixscale, 'Degrees/pixel')
-    header['CTYPE1']  = ('RA---TAN','first parameter RA  ,  projection TANgential')
-    header['CTYPE2']  = ('DEC--TAN','second parameter DEC,  projection TANgential')        
-    header['CRVAL1']  = (c.ra.deg,'Reference X pixel value')
-    header['CRVAL2']  = (c.dec.deg,'Reference Y pixel value')
-    header['CRPIX1']  = (xpix,'Reference X pixel')
-    header['CRPIX2']  = (ypix,'Reference Y pixel')
-    header['EQUINOX'] = (2000,'Equinox of coordinates')
-    header['TOT_ROT'] = (header['PARANG']+extrarot,'Total rotation angle (degrees)')
-    
-    angle = angle_sign*np.pi*(header['TOT_ROT'])/180.
-    header['CD1_1'] = (np.cos(angle)*xpixscale,'Rotation matrix coefficient')
-    header['CD1_2'] = (np.sin(angle)*xpixscale,'Rotation matrix coefficient')
-    header['CD2_1'] = (-np.sin(angle)*ypixscale,'Rotation matrix coefficient')
-    header['CD2_2'] = (np.cos(angle)*ypixscale,'Rotation matrix coefficient')
+
+    try:
+        header['XPIXSCAL'] = (xpixscale, 'Degrees/pixel')
+        header['YPIXSCAL'] = (ypixscale, 'Degrees/pixel')
+        header['CTYPE1']  = ('RA---TAN','first parameter RA  ,  projection TANgential')
+        header['CTYPE2']  = ('DEC--TAN','second parameter DEC,  projection TANgential')        
+        header['CRVAL1']  = (c.ra.deg,'Reference X pixel value')
+        header['CRVAL2']  = (c.dec.deg,'Reference Y pixel value')
+        header['CRPIX1']  = (xpix,'Reference X pixel')
+        header['CRPIX2']  = (ypix,'Reference Y pixel')
+        header['EQUINOX'] = (2000,'Equinox of coordinates')
+        header['TOT_ROT'] = (-1*(header['PARANG']+extrarot),'Total rotation angle (degrees)')
+        
+        angle = np.pi*(header['TOT_ROT'])/180.
+        header['CD1_1'] = (np.cos(angle)*xpixscale,'Rotation matrix coefficient')
+        header['CD1_2'] = (np.sin(angle)*xpixscale,'Rotation matrix coefficient')
+        header['CD2_1'] = (-np.sin(angle)*ypixscale,'Rotation matrix coefficient')
+        header['CD2_2'] = (np.cos(angle)*ypixscale,'Rotation matrix coefficient')
+    except:
+        return
+
+    return
+ 

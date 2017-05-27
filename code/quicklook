@@ -371,22 +371,15 @@ if __name__ == "__main__":
             saveivar = Config.getboolean('Extract', 'saveivar')
         except:
             saveivar = False
+            
         try:
-            xpixscale = Config.getboolean('Extract', 'xpixscale')
-            ypixscale = Config.getboolean('Extract', 'ypixscale')
+            alignWCS = Config.getboolean('Extract', 'alignWCS')
         except:
-            xpixscale = 0.015
-            ypixscale = 0.015
-        xpixscale /= 3600.
-        ypixscale /= 3600.
+            plotAnnulus = False
         try:
-            extrarot = Config.getboolean('Extract', 'extrarot')
+            plotAnnulus = Config.getboolean('Extract', 'plotAnnulus')
         except:
-            extrarot = 113
-        try:
-            angle_sign = Config.getboolean('Extract', 'angle_sign')
-        except:
-            angle_sign = 1
+            plotAnnulus = False
     
         if band=='lowres':
             R = R_lowres
@@ -562,9 +555,9 @@ if __name__ == "__main__":
             # the satellite spots
             ################################################################ 
             ydim,xdim = cube.data[0].shape
-            utr.addWCS(cube.header,xpix=ydim//2,ypix=xdim//2,
-                            xpixscale = -xpixscale, ypixscale = ypixscale,
-                            extrarot=extrarot,angle_sign=-1)      
+            utr.addWCS(datacube.header,xpix=ydim//2,ypix=xdim//2,
+                            xpixscale = -0.0164/3600., ypixscale = 0.0164/3600.,
+                            extrarot=rot_angle)      
 
                     
             if not saveivar:
@@ -640,7 +633,10 @@ if __name__ == "__main__":
             time.sleep(3)
             d = DS9('quicklook_cube')
             d.set('file '+outdircube+filename_cube)
+            if alignWCS:
+                d.set('align')
             dramp = DS9('quicklook_ramp')
             dramp.set('file '+outdircube+filename_ramp)
-            dramp.set("regions", "annulus(%f,%f,%d,%d)" % (center[1],center[0],rc,rout))
+            if plotAnnulus:
+                dramp.set("regions", "annulus(%f,%f,%d,%d)" % (center[1],center[0],rc,rout))
 
