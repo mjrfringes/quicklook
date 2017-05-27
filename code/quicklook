@@ -640,9 +640,9 @@ if __name__ == "__main__":
             
             out = inspectFiles([outdircube+filename_ramp])
     #         print(out.to_string())
-            print(out[['Name','OBJECT','EXPTIME','RA','DEC']].to_string(index=False))
-            print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']].to_string(index=False))
-            print(out[['X_GRDST','X_GRDAMP']].to_string(index=False))
+            print(out[['Name','OBJECT','EXPTIME','RA','DEC']][1].to_string(index=False))
+            print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']][1].to_string(index=False))
+            print(out[['X_GRDST','X_GRDAMP']][1].to_string(index=False))
 
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
