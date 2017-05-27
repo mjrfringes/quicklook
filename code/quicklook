@@ -642,5 +642,5 @@ if __name__ == "__main__":
             d.set('file '+outdircube+filename_cube)
             dramp = DS9('quicklook_ramp')
             dramp.set('file '+outdircube+filename_ramp)
-            dramp.set('annulus %f %f %d %d' % (center[1],center[0],rc,rout))
+            dramp.set("regions", "annulus(%f,%f,%d,%d)" % (center[1],center[0],rc,rout))
 
