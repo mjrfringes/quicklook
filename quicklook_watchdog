@@ -8,9 +8,9 @@ do
     # test if new file is a fits file
     if [[ "$file" =~ .*fits$ ]]; then 
         echo "Found new filename: $file"
-        echo "Waiting for exposure to finish..."
         # find the EXPTIME keyword value in FITS file, to know how much to wait
         tme=`./grepfits EXPTIME $path/$file | sed -n 2p | awk '{print $2;}'`
+        echo "Waiting $tme seconds for exposure to finish..."
         # wait for exposure to finish
         sleep $tme	
         sleep 2

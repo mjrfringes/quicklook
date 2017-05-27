@@ -607,22 +607,22 @@ if __name__ == "__main__":
 #             print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
 
             d = {"Region": "Full frame",
-                 "Max": np.nanmax(ramp),
-                 "99.99%": np.percentile(ramp,99.99),
-                 "Nreads x Max": Nreads*np.nanmax(ramp),
-                 "Nreads x 99.99%": Nreads*np.percentile(ramp,99.99)}
+                 "Max": np.nanmax(ramp.data),
+                 "99.99%": np.percentile(ramp.data,99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp.data),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp.data,99.99)}
             df = pd.DataFrame(d,columns = ("Region","Max","99.99%","Nreads x Max","Nreads x 99.99%"),index=np.arange(1))
             d = {"Region": "Masked frame",
-                 "Max": np.nanmax(ramp[~mask]),
-                 "99.99%": np.percentile(ramp[~mask],99.99),
-                 "Nreads x Max": Nreads*np.nanmax(ramp[~mask]),
-                 "Nreads x 99.99%": Nreads*np.percentile(ramp[~mask],99.99)}
+                 "Max": np.nanmax(ramp.data[~mask]),
+                 "99.99%": np.percentile(ramp.data[~mask],99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp.data[~mask]),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp.data[~mask],99.99)}
             df = df.append(d,ignore_index=True)
             d = {"Region": "Within mask",
-                 "Max": np.nanmax(ramp[mask]),
-                 "99.99%": np.percentile(ramp[mask],99.99),
-                 "Nreads x Max": Nreads*np.nanmax(ramp[mask]),
-                 "Nreads x 99.99%": Nreads*np.percentile(ramp[mask],99.99)}
+                 "Max": np.nanmax(ramp.data[mask]),
+                 "99.99%": np.percentile(ramp.data[mask],99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp.data[mask]),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp.data[mask],99.99)}
             df = df.append(d,ignore_index=True)
 
             print('Nreads: %d' % Nreads)
