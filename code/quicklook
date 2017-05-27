@@ -271,7 +271,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     
     inImage = utr.calcramp(filename=filename, mask=maskarr,read_idx=read_idx, 
                            header=header, gain=gain, noisefac=noisefac, 
-                           maxcpus=maxcpus)
+                           maxcpus=maxcpus,fitnonlin=False,fitexpdecay=False)
         
 
     ################################################################
@@ -347,11 +347,7 @@ if __name__ == "__main__":
 
     for filename in filenames:
         header = fits.open(filename)[0].header
-        
-        out = inspectFiles([filename])
-#         print(out.to_string())
-        print(out)
-        
+                
         # which band are we in?
         band = header['Y_FLTNAM']
         if band=='Broadband' or band=='ND': band = 'lowres'
@@ -568,6 +564,10 @@ if __name__ == "__main__":
                            calibdir=bestcalibdir, R=R, 
                            smoothandmask=smoothandmask, flatfield=flatfield)
 
+
+            cube.extrahead = header
+            ramp.extrahead = header
+            
             ################################################################
             # Add WCS for the cube 
             # for now assume the image is centered on the cube
@@ -637,6 +637,12 @@ if __name__ == "__main__":
                  "Nreads x Max": Nreads*np.nanmax(ramp.data[mask]),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[mask],99.99)}
             df = df.append(d,ignore_index=True)
+            
+            out = inspectFiles([outdircube+filename_ramp])
+    #         print(out.to_string())
+            print(out[['Name','OBJECT','EXPTIME','RA','DEC']].to_string(index=False))
+            print(out[['Y_FLTNAM','Y_PRISM','X_LYOT','X_CHAPKO','X_FPM']].to_string(index=False))
+            print(out[['X_GRDST','X_GRDAMP']].to_string(index=False))
 
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
