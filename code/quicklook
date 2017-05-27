@@ -350,7 +350,7 @@ if __name__ == "__main__":
         
         out = inspectFiles([filename])
 #         print(out.to_string())
-        print out
+        print(out)
         
         # which band are we in?
         band = header['Y_FLTNAM']
