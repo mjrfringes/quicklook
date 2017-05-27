@@ -579,8 +579,8 @@ if __name__ == "__main__":
             center = ndimage.measurements.center_of_mass(ramp.data)
             
             ydim,xdim = ramp.data.shape
-            x = np.arange(ydim)
-            y = np.arange(xdim)
+            x = np.arange(ydim,dtype=np.float)
+            y = np.arange(xdim,dtype=np.float)
             xc = center[1]
             yc = center[0]
             rc=100
