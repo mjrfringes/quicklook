@@ -25,8 +25,10 @@ import multiprocessing
 import copy
 import shutil
 import sys
+from scipy import signal,ndimage
 import pkg_resources
 from pyds9 import DS9
+import pandas as pd
 
 
 
@@ -457,24 +459,26 @@ if __name__ == "__main__":
             # Construct the wavelength calibration folder
             ###############################################################
             outdir = outdir+band+'_%.2f/' % (header['mjd'])
+            
+            ###############################################################
+            # Monochromatic flatfield image
+            ###############################################################
+
+            denom = 1e-100
+            im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
+            num = im.data*im.ivar
+            denom = denom + im.ivar
+            inImage = Image(data=num/denom, ivar=mask*1./denom)
+            filename_ramp = re.sub('.fits', '_calramp.fits', re.sub('.*/', '', filename))
+            inImage.write(outdircube+filename_ramp,clobber=True)
+            
+            time.sleep(2)
+            dramp = DS9('quicklook_ramp')
+            dramp.set('file '+outdircube+filename_ramp)
+            
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
     
-                ###############################################################
-                # Monochromatic flatfield image
-                ###############################################################
-
-                denom = 1e-100
-                im = utr.calcramp(filename=filename, mask=mask, maxcpus=maxcpus)
-                num = im.data*im.ivar
-                denom = denom + im.ivar
-                inImage = Image(data=num/denom, ivar=mask*1./denom)
-                filename_ramp = re.sub('.fits', '_calramp.fits', re.sub('.*/', '', filename))
-                inImage.write(outdircube+filename_ramp,clobber=True)
-                
-                time.sleep(2)
-                dramp = DS9('quicklook_ramp')
-                dramp.set('file '+outdircube+filename_ramp)
 
     
                 ###############################################################
@@ -508,7 +512,8 @@ if __name__ == "__main__":
 
                 for fname in ['mask.fits', 'pixelflat.fits']:
                     shutil.copy(os.path.join(prefix, fname), outdir+ fname)
-                    
+                
+                print("Buildcal finished, created folder %s" % outdir)
                 
             else:
                 print("%s already exists, skipping buildcal. Delete folder if you want to overwrite." % outdir)            
@@ -570,11 +575,14 @@ if __name__ == "__main__":
             filename_ramp = re.sub('.fits', '_ramp.fits', re.sub('.*/', '', filename))
             print(outdircube+filename_ramp)
             print('Ramp statistics:')
+            
+            center = ndimage.measurements.center_of_mass(ramp)
+            
             ydim,xdim = ramp.data.shape
             x = np.arange(ydim)
             y = np.arange(xdim)
-            xc = 930
-            yc = 1014
+            xc = center[1]
+            yc = center[0]
             rc=100
             rout=200
             x -= xc
@@ -583,14 +591,55 @@ if __name__ == "__main__":
             r = np.sqrt(x**2+y**2)
             mask = r>rc
             mask *= r<rout
+            
+
+            
             #ramp.data[~mask] = 0
-            print('Mask: (xc,yc)=(%d,%d) between r=%d and r=%d' % (xc,yc,rc,rout))
+#             print('Mask: (xc,yc)=(%d,%d) between r=%d and r=%d' % (xc,yc,rc,rout))
             Nreads = ramp.header['LASTRD']-ramp.header['FIRSTRD']
+#             print('Nreads: %d' % Nreads)
+#             print('Max pixel value: %f' % np.nanmax(ramp.data))
+#             print('99.9 percentile: %f' % np.percentile(ramp.data,99.9)))
+#             print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
+#             print('99.9 percentile outside of mask: %f' % np.percentile(ramp.data[mask],99.9))
+#             print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*Nreads))
+#             print('Max pixel outside of mask x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
+#             print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
+
+            d = {"Region": "Full frame",
+                 "Max": np.nanmax(ramp),
+                 "99.99%": np.percentile(ramp,99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp,99.99)}
+            df = pd.DataFrame(d,columns = ("Region","Max","99.99%","Nreads x Max","Nreads x 99.99%"),index=np.arange(1))
+            d = {"Region": "Masked frame",
+                 "Max": np.nanmax(ramp[~mask]),
+                 "99.99%": np.percentile(ramp[~mask],99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp[~mask]),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp[~mask],99.99)}
+            df = df.append(d,ignore_index=True)
+            d = {"Region": "Within mask",
+                 "Max": np.nanmax(ramp[mask]),
+                 "99.99%": np.percentile(ramp[mask],99.99),
+                 "Nreads x Max": Nreads*np.nanmax(ramp[mask]),
+                 "Nreads x 99.99%": Nreads*np.percentile(ramp[mask],99.99)}
+            df = df.append(d,ignore_index=True)
+
             print('Nreads: %d' % Nreads)
-            print('Max pixel value outside of mask: %f' % np.nanmax(ramp.data[mask]))
-            print('99.9 percentile: %f' % np.percentile(ramp.data[mask],99.9))
-            print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
-            print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
+            print('Image centroid: %.2f,%.2f' % center)
+            print('Annular mask: from %d to %d pixels from center' % (rc,rout))
+            print("==============================Statistics================================")
+            print(df.to_string())
+            print("========================================================================")
+
+            print('Nreads: %d' % Nreads)
+            print('Image centroid: %.2f,%.2f' % center)
+            print('Annular mask: from %d to %d pixels from center' % (rc,rout))
+            print("==============================Statistics================================")
+            print(df.to_string())
+            print("========================================================================")
+
+
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
             if saveramp:
