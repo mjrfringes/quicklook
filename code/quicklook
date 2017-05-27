@@ -271,7 +271,7 @@ def getcube(filename, read_idx=[1, None], calibdir='calibrations/20160408/',
     
     inImage = utr.calcramp(filename=filename, mask=maskarr,read_idx=read_idx, 
                            header=header, gain=gain, noisefac=noisefac, 
-                           maxcpus=maxcpus,fitnonlin=False,fitexpdecay=False)
+                           maxcpus=maxcpus,fitnonlin=True,fitexpdecay=False)
         
 
     ################################################################
