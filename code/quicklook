@@ -648,28 +648,28 @@ if __name__ == "__main__":
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
             print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("===================== Ramp  Statistics ========================")
+            print("======================== Ramp  Statistics ==========================")
 #             print(df.to_string())
             format_blue = ';'.join([str(1), str(37), str(44)])
             format_green = ';'.join([str(1), str(30), str(42)])
             format_yellow = ';'.join([str(1), str(30), str(43)])
             format_red = ';'.join([str(5), str(37), str(41)])
             
-            print '{:>10}{:>10}{:>10}{:>12}{:>15}'.format(df.columns)
+            print('{:>15}{:>10}{:>10}{:>15}{:>18}'.format(*df.columns))
             for jdf in range(df.shape[0]):
                 val = df["Nreads x 99.99%"][jdf]
                 if val>=52000: format=format_red
                 elif val<52000 and val>=50000: format=format_yellow
                 elif val<50000 and val>10000: format=format_green
                 elif val<=10000: format=format_blue
-                s = '{:>10}'.format(df["Region"][jdf])
+                s = '{:>15}'.format(df["Region"][jdf])
 #                 for col in df.columns[1:]:
-                s += '\x1b[%sm %s \x1b[0m' % (format, '{:>10}'.format('%.3f' % df["Max"][jdf]))
-                s += '\x1b[%sm %s \x1b[0m' % (format, '{:>10}'.format('%.3f' % df["99.99%"][jdf]))
-                s += '\x1b[%sm %s \x1b[0m' % (format, '{:>12}'.format('%.3f' % df["Nreads x Max"][jdf]))
-                s += '\x1b[%sm %s \x1b[0m' % (format, '{:>15}'.format('%.3f' % df["Nreads x 99.99%"][jdf]))
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["Max"][jdf]))
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["99.99%"][jdf]))
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format('%d' % df["Nreads x Max"][jdf]))
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>18}'.format('%d' % df["Nreads x 99.99%"][jdf]))
                 print(s)
-            print("===============================================================")
+            print("====================================================================")
 
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
