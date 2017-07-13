@@ -674,7 +674,6 @@ if __name__ == "__main__":
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>18}'.format('%d' % df["Nreads x 99.99%"][jdf]))
                 print(s)
             print("===================================================================================")
-            print("Number of pixels above the 99.99 percentile: %d" % (len()
             print("Color coding for Nreads x 99.99%: ")
 #             print(" Blue <10k | 10k < Green < 50k | 50k < Yellow < 52k | 52k < Red ")
             s=''
