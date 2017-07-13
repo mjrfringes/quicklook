@@ -663,7 +663,7 @@ if __name__ == "__main__":
                 s = ''
                 for col in df.columns:
                     s += '\x1b[%sm %d \x1b[0m' % (format, df[col][j])
-                print s         
+                print(s)
             print("===============================================================")
 
             ramp.data *= Nreads
