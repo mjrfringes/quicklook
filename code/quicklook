@@ -619,22 +619,25 @@ if __name__ == "__main__":
 #             print('Max pixel x Nreads: %f' % (np.nanmax(ramp.data)*Nreads))
 #             print('Max pixel outside of mask x Nreads: %f' % (np.nanmax(ramp.data[mask])*Nreads))
 #             print('99.9 percentile x Nreads: %f' % (Nreads*np.percentile(ramp.data[mask],99.9)))
-
+            
             d = {"Region": "Full frame",
                  "Max": np.nanmax(ramp.data),
                  "99.99%": np.percentile(ramp.data,99.99),
+                 "Npix > 99.99%": len(ramp.data[ramp.data>np.percentile(ramp.data,99.99)]),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data,99.99)}
-            df = pd.DataFrame(d,columns = ("Region","Max","99.99%","Nreads x Max","Nreads x 99.99%"),index=np.arange(1))
+            df = pd.DataFrame(d,columns = ("Region","Max","99.99%","Npix > 99.99%","Nreads x Max","Nreads x 99.99%"),index=np.arange(1))
             d = {"Region": "Masked frame",
                  "Max": np.nanmax(ramp.data[~mask]),
                  "99.99%": np.percentile(ramp.data[~mask],99.99),
+                 "Npix > 99.99%": len(ramp.data[ramp.data[~mask]>np.percentile(ramp.data[~mask],99.99)]),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data[~mask]),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[~mask],99.99)}
             df = df.append(d,ignore_index=True)
             d = {"Region": "Within mask",
                  "Max": np.nanmax(ramp.data[mask]),
                  "99.99%": np.percentile(ramp.data[mask],99.99),
+                 "Npix > 99.99%": len(ramp.data[ramp.data[mask]>np.percentile(ramp.data[mask],99.99)]),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data[mask]),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[mask],99.99)}
             df = df.append(d,ignore_index=True)
@@ -648,14 +651,14 @@ if __name__ == "__main__":
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
             print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("======================== Ramp  Statistics ==========================")
+            print("================================ Ramp  Statistics =================================")
 #             print(df.to_string())
             format_blue = ';'.join([str(1), str(37), str(44)])
             format_green = ';'.join([str(1), str(37), str(42)])
             format_yellow = ';'.join([str(1), str(37), str(43)])
             format_red = ';'.join([str(1), str(37), str(41)])
             
-            print('{:>15}{:>10}{:>10}{:>15}{:>18}'.format(*df.columns))
+            print('{:>15}{:>10}{:>10}{:>15}{:>15}{:>18}'.format(*df.columns))
             for jdf in range(df.shape[0]):
                 val = df["Nreads x 99.99%"][jdf]
                 if val>=52000: format=format_red
@@ -666,10 +669,12 @@ if __name__ == "__main__":
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format(df["Region"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["Max"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["99.99%"][jdf]))
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format('%d' % df["Npix > 99.99%"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format('%d' % df["Nreads x Max"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>18}'.format('%d' % df["Nreads x 99.99%"][jdf]))
                 print(s)
-            print("====================================================================")
+            print("===================================================================================")
+            print("Number of pixels above the 99.99 percentile: %d" % (len()
             print("Color coding for Nreads x 99.99%: ")
 #             print(" Blue <10k | 10k < Green < 50k | 50k < Yellow < 52k | 52k < Red ")
             s=''
