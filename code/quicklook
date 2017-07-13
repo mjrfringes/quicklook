@@ -662,7 +662,7 @@ if __name__ == "__main__":
                 elif val<=10000: format=format_blue
                 s = ''
                 for col in df.columns:
-                    s += '\x1b[%sm %d \x1b[0m' % (format, df[col][j])
+                    s += '\x1b[%sm %d \x1b[0m' % (format, df[col][jdf])
                 print(s)
             print("===============================================================")
 
