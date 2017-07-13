@@ -399,9 +399,9 @@ if __name__ == "__main__":
             R = R_lowres
         else:
             R = R_hires
-        print("Save inverse variance: "+saveivar)
-        print("Aligning to WCS: "+alignWCS)
-        print("Plotting annulus: "+plotAnnulus)
+        print("Save inverse variance: "+str(saveivar))
+        print("Aligning to WCS: "+str(alignWCS))
+        print("Plotting annulus: "+str(plotAnnulus))
 
         ################################################################
         # Maximum threads must be between 1 and cpu_count, inclusive
