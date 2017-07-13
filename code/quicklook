@@ -389,7 +389,7 @@ if __name__ == "__main__":
         try:
             alignWCS = Config.getboolean('Extract', 'alignWCS')
         except:
-            plotAnnulus = False
+            alignWCS = False
         try:
             plotAnnulus = Config.getboolean('Extract', 'plotAnnulus')
         except:
@@ -399,6 +399,9 @@ if __name__ == "__main__":
             R = R_lowres
         else:
             R = R_hires
+        print("Save inverse variance: "+saveivar)
+        print("Aligning to WCS: "+alignWCS)
+        print("Plotting annulus: "+plotAnnulus)
 
         ################################################################
         # Maximum threads must be between 1 and cpu_count, inclusive
@@ -645,20 +648,36 @@ if __name__ == "__main__":
             print('Nreads: %d' % Nreads)
             print('Image centroid: %.2f,%.2f' % center)
             print('Annular mask: from %d to %d pixels from center' % (rc,rout))
-            print("========================== Ramp  Statistics ==============================")
-            print(df.to_string())
-            print("==========================================================================")
+            print("===================== Ramp  Statistics ========================")
+#             print(df.to_string())
+            format_blue = ';'.join([str(1), str(37), str(44)])
+            format_green = ';'.join([str(1), str(30), str(42)])
+            format_yellow = ';'.join([str(1), str(30), str(43)])
+            format_red = ';'.join([str(5), str(37), str(41)])
+            for jdf in range(df.shape[0]):
+                val = df["Nreads x 99.99%"][jdf]
+                if val>=52000: format=format_red
+                elif val<52000 and val>=50000: format=format_yellow
+                elif val<50000 and val>10000: format=format_green
+                elif val<=10000: format=format_blue
+                s = ''
+                for col in df.columns:
+                    s += '\x1b[%sm %d \x1b[0m' % (format, df[col][j])
+                print s         
+            print("===============================================================")
 
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
             if saveramp:
                 ramp.write(outdircube+filename_ramp,clobber=True)
 
-            time.sleep(3)
+            time.sleep(1)
             d = DS9('quicklook_cube')
             d.set('file '+outdircube+filename_cube)
+            
             if alignWCS:
                 d.set('align')
+                
             dramp = DS9('quicklook_ramp')
             dramp.set('file '+outdircube+filename_ramp)
             if plotAnnulus:
