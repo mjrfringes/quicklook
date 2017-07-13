@@ -623,21 +623,21 @@ if __name__ == "__main__":
             d = {"Region": "Full frame",
                  "Max": np.nanmax(ramp.data),
                  "99.99%": np.percentile(ramp.data,99.99),
-                 "Npix > 99.99%": len(ramp.data[ramp.data>np.percentile(ramp.data,99.99)]),
+                 "Npix > 99.99%": np.sum(ramp.data>np.percentile(ramp.data,99.99)),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data,99.99)}
             df = pd.DataFrame(d,columns = ("Region","Max","99.99%","Npix > 99.99%","Nreads x Max","Nreads x 99.99%"),index=np.arange(1))
             d = {"Region": "Masked frame",
                  "Max": np.nanmax(ramp.data[~mask]),
                  "99.99%": np.percentile(ramp.data[~mask],99.99),
-                 "Npix > 99.99%": len(ramp.data[ramp.data[~mask]>np.percentile(ramp.data[~mask],99.99)]),
+                 "Npix > 99.99%": np.sum(ramp.data[~mask]>np.percentile(ramp.data[~mask],99.99)),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data[~mask]),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[~mask],99.99)}
             df = df.append(d,ignore_index=True)
             d = {"Region": "Within mask",
                  "Max": np.nanmax(ramp.data[mask]),
                  "99.99%": np.percentile(ramp.data[mask],99.99),
-                 "Npix > 99.99%": len(ramp.data[ramp.data[mask]>np.percentile(ramp.data[mask],99.99)]),
+                 "Npix > 99.99%": np.sum(ramp.data[mask]>np.percentile(ramp.data[mask],99.99)),
                  "Nreads x Max": Nreads*np.nanmax(ramp.data[mask]),
                  "Nreads x 99.99%": Nreads*np.percentile(ramp.data[mask],99.99)}
             df = df.append(d,ignore_index=True)
