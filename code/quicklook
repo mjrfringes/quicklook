@@ -662,14 +662,16 @@ if __name__ == "__main__":
                 elif val<52000 and val>=50000: format=format_yellow
                 elif val<50000 and val>10000: format=format_green
                 elif val<=10000: format=format_blue
-                s = '{:>15}'.format(df["Region"][jdf])
-#                 for col in df.columns[1:]:
+                s = ''
+                s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format(df["Region"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["Max"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>10}'.format('%d' % df["99.99%"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>15}'.format('%d' % df["Nreads x Max"][jdf]))
                 s += '\x1b[%sm%s\x1b[0m' % (format, '{:>18}'.format('%d' % df["Nreads x 99.99%"][jdf]))
                 print(s)
             print("====================================================================")
+            print(" Color coding for Nreads x 99.99%: ")
+            print(" Blue <10k cts | 10k < Green < 50k | 50k < Yellow < 52k | 52k < Red ")
 
             ramp.data *= Nreads
             print('Ramp displayed is already multiplied by Nreads')
