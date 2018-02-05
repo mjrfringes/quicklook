@@ -546,15 +546,15 @@ if __name__ == "__main__":
             # it means that the buildcal either is not done, or didn't succeed
             # If so, go to the next-closest date
             ###############################################################
-            file_list = os.listdir(outdir+band+'_'+str(closest))
+            file_list = os.listdir(outdir+band+'_%.2f'% (closest))
             if "mask.fits" not in file_list:
                 print("Most recent wavelength calibration hasn't finished yet or didn't succeed. Using other calibration.")
                 mjd_list.remove(closest)
                 closest = min(mjd_list, key=lambda x:abs(x-current_mjd))
             
             
-            bestcalibdir = outdir+band+'_'+str(closest)
-            print('Selected best wavecal %s' % (band+'_'+str(closest)))
+            bestcalibdir = outdir+band+'_%.2f'% (closest)
+            print('Selected best wavecal %s' % (band+'_%.2f'% closest))
     
             ###############################################################
             # Reduce the cube
